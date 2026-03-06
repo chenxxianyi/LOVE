@@ -11,17 +11,24 @@ import os
 import uuid
 
 from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, get_db
+from love_core import router as core_router, init_p0_tables
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 # Create tables
 try:
     # Use raw connection to ensure database exists first (handled in database.py)
     # Then bind engine to the specific database
     Base.metadata.create_all(bind=engine)
+    init_p0_tables()
 except Exception as e:
     print(f"Error creating tables: {e}")
 
 
 app = FastAPI()
+app.include_router(core_router)
 
 # CORS
 app.add_middleware(
@@ -33,7 +40,7 @@ app.add_middleware(
 )
 
 # Static Files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # Pydantic Models
 class InfoBase(BaseModel):
@@ -412,14 +419,10 @@ def create_moment(moment: MomentCreate, db: Session = Depends(get_db)):
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        # Create uploads directory if not exists
-        if not os.path.exists("uploads"):
-            os.makedirs("uploads")
-            
         # Generate unique filename
         file_ext = os.path.splitext(file.filename)[1]
         unique_filename = f"{uuid.uuid4()}{file_ext}"
-        file_path = f"uploads/{unique_filename}"
+        file_path = os.path.join(UPLOADS_DIR, unique_filename)
         
         # Save file
         with open(file_path, "wb") as buffer:
@@ -762,6 +765,93 @@ def get_report(db: Session = Depends(get_db)):
         days_together=days_together,
         latest_moment_date=latest_moment_date
     )
+
+
+@app.get("/api/dashboard/summary")
+def get_dashboard_summary(db: Session = Depends(get_db)):
+    def safe_count(table_name: str) -> int:
+        try:
+            value = db.execute(text(f"SELECT COUNT(*) FROM {table_name}")).scalar()
+            return int(value or 0)
+        except Exception:
+            return 0
+
+    info = db.query(Info).first()
+    days_together = 0
+    if info and info.start_date:
+        try:
+            start = datetime.strptime(info.start_date, "%Y-%m-%d").date()
+            days_together = (date.today() - start).days
+        except Exception:
+            days_together = 0
+
+    total_moments = safe_count("moments")
+    total_bucket_items = safe_count("bucket_list")
+    total_anniversaries = safe_count("anniversaries")
+    total_capsules = safe_count("time_capsules")
+    try:
+        pending_value = db.execute(
+            text("SELECT COUNT(*) FROM bucket_list WHERE status <> 'completed'")
+        ).scalar()
+        pending_bucket_items = int(pending_value or 0)
+    except Exception:
+        pending_bucket_items = 0
+
+    # Keep both snake_case and camelCase for old/new frontends.
+    return {
+        "days_together": days_together,
+        "total_moments": total_moments,
+        "total_bucket_items": total_bucket_items,
+        "pending_bucket_items": pending_bucket_items,
+        "total_anniversaries": total_anniversaries,
+        "total_capsules": total_capsules,
+        "daysTogether": days_together,
+        "totalMoments": total_moments,
+        "totalBucketItems": total_bucket_items,
+        "pendingBucketItems": pending_bucket_items,
+        "totalAnniversaries": total_anniversaries,
+        "totalCapsules": total_capsules,
+    }
+
+
+@app.get("/api/patterns")
+def get_patterns(db: Session = Depends(get_db)):
+    mood_counts = {}
+    month_counts = {}
+    location_counts = {}
+    try:
+        rows = db.execute(text("SELECT mood, date, location FROM moments")).fetchall()
+    except Exception:
+        rows = []
+
+    for mood, moment_date, location in rows:
+        if mood:
+            mood_counts[mood] = mood_counts.get(mood, 0) + 1
+        if moment_date and len(moment_date) >= 7:
+            month_key = moment_date[:7]
+            month_counts[month_key] = month_counts.get(month_key, 0) + 1
+        if location:
+            location_counts[location] = location_counts.get(location, 0) + 1
+
+    mood_patterns = [
+        {"name": key, "count": value}
+        for key, value in sorted(mood_counts.items(), key=lambda x: x[1], reverse=True)
+    ]
+    monthly_patterns = [
+        {"month": key, "count": value}
+        for key, value in sorted(month_counts.items(), key=lambda x: x[0])
+    ]
+    location_patterns = [
+        {"name": key, "count": value}
+        for key, value in sorted(location_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    ]
+
+    return {
+        "mood_patterns": mood_patterns,
+        "monthly_patterns": monthly_patterns,
+        "location_patterns": location_patterns,
+        "patterns": mood_patterns,
+    }
 
 if __name__ == "__main__":
     import uvicorn
