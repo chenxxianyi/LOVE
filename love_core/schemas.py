@@ -12,6 +12,12 @@ class UserProfileOut(BaseModel):
     avatar: Optional[str] = None
 
 
+class UserProfileUpdate(BaseModel):
+    nickname: Optional[str] = None
+    avatar: Optional[str] = None
+
+
+
 class LoginPayload(BaseModel):
     account: str
     password: str
@@ -40,6 +46,13 @@ class ForgotResetPayload(BaseModel):
 class ChangePasswordPayload(BaseModel):
     old_password: str
     new_password: str
+
+
+class AccountSetupPayload(BaseModel):
+    """用于临时用户（invite_xxx@love.local）设置正式账号和密码"""
+    account: str
+    password: str
+    nickname: Optional[str] = None
 
 
 class AuthSessionOut(BaseModel):

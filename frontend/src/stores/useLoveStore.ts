@@ -271,6 +271,30 @@ export const useLoveStore = defineStore("love", {
         throw err;
       }
     },
+    async updateMoment(id: number, update: Partial<MomentItem>) {
+      try {
+        const response = await axios.put(`http://localhost:8000/api/moments/${id}`, update);
+        const index = this.moments.findIndex(m => m.id === id);
+        if (index !== -1) {
+          this.moments[index] = response.data;
+        }
+        return response.data;
+      } catch (err: any) {
+        console.error("Failed to update moment:", err);
+        throw err;
+      }
+    },
+    async deleteMoment(id: number) {
+      try {
+        await axios.delete(`http://localhost:8000/api/moments/${id}`);
+        this.moments = this.moments.filter(m => m.id !== id);
+        // Refresh stats to update count
+        this.fetchInfo();
+      } catch (err: any) {
+        console.error("Failed to delete moment:", err);
+        throw err;
+      }
+    },
     async createBucketItem(item: Omit<BucketItem, "id" | "created_at">) {
       try {
         const response = await axios.post("http://localhost:8000/api/bucket", item);

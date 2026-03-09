@@ -50,6 +50,8 @@
           :key="item.id"
           :item="item"
           :index="index"
+          @edit="handleEdit"
+          @delete="handleDelete"
         />
       </div>
     </section>
@@ -107,20 +109,31 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- Edit Dialog -->
+    <AddMomentForm 
+      v-model="editDialogVisible" 
+      :edit-data="currentEditItem"
+      @success="store.fetchMoments"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from "vue";
 import MomentCard from "../components/MomentCard.vue";
-import { useLoveStore } from "../stores/useLoveStore";
-import { ElMessage } from "element-plus";
+import AddMomentForm from "../components/AddMomentForm.vue";
+import { useLoveStore, type MomentItem } from "../stores/useLoveStore";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Edit } from "@element-plus/icons-vue";
 
 const store = useLoveStore();
 const showCoverManager = ref(false);
 const showInfoDialog = ref(false);
 const loading = ref(false);
+
+const editDialogVisible = ref(false);
+const currentEditItem = ref<MomentItem | null>(null);
 
 const infoForm = reactive({
   couple_names: "",
@@ -174,6 +187,33 @@ const handleDeleteCover = async (id: number) => {
     }
   } catch (error) {
     ElMessage.error("删除失败");
+  }
+};
+
+const handleEdit = (item: MomentItem) => {
+  currentEditItem.value = item;
+  editDialogVisible.value = true;
+};
+
+const handleDelete = async (id: number) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这条珍贵的回忆吗？删除后无法恢复哦。',
+      '删除提醒',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '留着',
+        type: 'warning',
+        confirmButtonClass: 'el-button--danger'
+      }
+    );
+    
+    await store.deleteMoment(id);
+    ElMessage.success("回忆已删除");
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error("删除失败");
+    }
   }
 };
 </script>

@@ -101,6 +101,22 @@ class DailyQuestion(Base):
     answer_a = Column(Text, nullable=True)
     answer_b = Column(Text, nullable=True)
 
+class Reminder(Base):
+    __tablename__ = "reminders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255))
+    type = Column(String(50))            # anniversary | capsule | question | bucket
+    trigger_at = Column(String(50))      # ISO date string
+    advance = Column(String(20), default="same_day")  # same_day | 1d | 3d
+    repeat_rule = Column(String(50), default="none")  # none | daily | weekly | monthly | yearly
+    channels = Column(JSON, default=list)             # ["in_app", "push", "email"]
+    quiet_hours_start = Column(String(10), nullable=True)
+    quiet_hours_end = Column(String(10), nullable=True)
+    enabled = Column(Boolean, default=True)
+    status = Column(String(20), default="pending")    # pending | done | ignored
+    created_at = Column(String(50))
+
 # Dependency
 def get_db():
     db = SessionLocal()

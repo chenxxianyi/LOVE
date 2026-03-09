@@ -9,6 +9,12 @@ import type {
   UserProfile,
 } from "../types/auth";
 
+export interface AccountSetupPayload {
+  account: string;
+  password: string;
+  nickname?: string;
+}
+
 export const authApi = {
   login(payload: LoginPayload) {
     return unwrap(apiClient.post<AuthSession>("/auth/login", payload));
@@ -28,4 +34,11 @@ export const authApi = {
   fetchMe() {
     return unwrap(apiClient.get<UserProfile>("/auth/me"));
   },
+  setupAccount(payload: AccountSetupPayload) {
+    return unwrap(apiClient.post<AuthSession>("/auth/account/setup", payload));
+  },
+  updateMe(payload: Partial<UserProfile>) {
+    return unwrap(apiClient.put<UserProfile>("/auth/me", payload));
+  },
 };
+

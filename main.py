@@ -10,7 +10,7 @@ import json
 import os
 import uuid
 
-from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, get_db
+from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, Reminder, get_db
 from love_core import router as core_router, init_p0_tables
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -294,7 +294,6 @@ def seed_data():
     finally:
         db.close()
 
-
 # Routes
 @app.get("/api/info")
 def get_info(db: Session = Depends(get_db)):
@@ -302,7 +301,7 @@ def get_info(db: Session = Depends(get_db)):
     if not info:
         # Create default info if not exists
         info = Info(
-            couple_names="小鹿 & 小棠", 
+            couple_name="小鹿 & 小棠", 
             start_date="2024-04-21",
             cover_image=""
         )
@@ -316,24 +315,20 @@ def get_info(db: Session = Depends(get_db)):
     days_together = (today - start).days
     
     # Calculate next month anniversary
-    # Logic: find next day with same day-of-month
     try:
         next_month_date = date(today.year, today.month, start.day)
         if next_month_date < today:
-            # If this month's anniversary passed, move to next month
             if today.month == 12:
                 next_month_date = date(today.year + 1, 1, start.day)
             else:
                 next_month_date = date(today.year, today.month + 1, start.day)
         days_left = (next_month_date - today).days
     except ValueError:
-        # Handle cases like 31st where next month might not have it
-        # Simplified: just add 30 days roughly or skip
         days_left = 30 
 
     return {
-        "coupleName": info.couple_names,
-        "todayMood": "今天也要认真相爱", # This could be dynamic too
+        "coupleName": info.couple_name,
+        "todayMood": "今天也要认真相爱",
         "dashboardStats": [
             {"label": "在一起", "value": f"{days_together} 天", "hint": f"从 {info.start_date} 到今天"},
             {"label": "共同回忆", "value": f"{db.query(Moment).count()} 条", "hint": "照片 + 视频 + 文字"},
@@ -343,23 +338,22 @@ def get_info(db: Session = Depends(get_db)):
     }
 
 class InfoUpdate(BaseModel):
-    couple_names: Optional[str] = None
+    couple_name: Optional[str] = None
     start_date: Optional[str] = None
 
 @app.post("/api/info", response_model=dict)
 def update_info(info_update: InfoUpdate, db: Session = Depends(get_db)):
     db_info = db.query(Info).first()
     if not db_info:
-        # Create default info if not exists
         db_info = Info(
-            couple_names="小鹿 & 小棠", 
+            couple_name="小鹿 & 小棠", 
             start_date="2024-04-21",
             cover_image=""
         )
         db.add(db_info)
     
-    if info_update.couple_names:
-        db_info.couple_names = info_update.couple_names
+    if info_update.couple_name:
+        db_info.couple_name = info_update.couple_name
     if info_update.start_date:
         db_info.start_date = info_update.start_date
         
@@ -433,6 +427,66 @@ async def upload_file(file: UploadFile = File(...)):
         return {"url": f"http://localhost:8000/uploads/{unique_filename}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class MomentUpdate(BaseModel):
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+    title: Optional[str] = None
+    date: Optional[str] = None
+    location: Optional[str] = None
+    mood: Optional[str] = None
+    summary: Optional[str] = None
+    images: Optional[List[str]] = None
+    hasVideo: Optional[bool] = None
+
+@app.put("/api/moments/{moment_id}", response_model=MomentResponse)
+def update_moment(moment_id: int, update: MomentUpdate, db: Session = Depends(get_db)):
+    db_moment = db.query(Moment).filter(Moment.id == moment_id).first()
+    if not db_moment:
+        raise HTTPException(status_code=404, detail="Moment not found")
+    
+    if update.latitude is not None:
+        db_moment.latitude = update.latitude
+    if update.longitude is not None:
+        db_moment.longitude = update.longitude
+    if update.title is not None:
+        db_moment.title = update.title
+    if update.date is not None:
+        db_moment.date = update.date
+    if update.location is not None:
+        db_moment.location = update.location
+    if update.mood is not None:
+        db_moment.mood = update.mood
+    if update.summary is not None:
+        db_moment.summary = update.summary
+    if update.images is not None:
+        db_moment.images = update.images
+    if update.hasVideo is not None:
+        db_moment.has_video = update.hasVideo
+        
+    db.commit()
+    db.refresh(db_moment)
+    return MomentResponse(
+        id=db_moment.id,
+        title=db_moment.title,
+        date=db_moment.date,
+        location=db_moment.location,
+        latitude=db_moment.latitude,
+        longitude=db_moment.longitude,
+        mood=db_moment.mood,
+        summary=db_moment.summary,
+        images=db_moment.images if db_moment.images else [],
+        hasVideo=db_moment.has_video
+    )
+
+@app.delete("/api/moments/{moment_id}")
+def delete_moment(moment_id: int, db: Session = Depends(get_db)):
+    db_moment = db.query(Moment).filter(Moment.id == moment_id).first()
+    if not db_moment:
+        raise HTTPException(status_code=404, detail="Moment not found")
+    db.delete(db_moment)
+    db.commit()
+    return {"success": True}
 
 # Bucket List Routes
 @app.get("/api/bucket", response_model=List[BucketItemResponse])

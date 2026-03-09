@@ -20,6 +20,7 @@ from love_core.deps import (
 )
 from love_core.models import P0ResetCode, P0Session, P0User
 from love_core.schemas import (
+    AccountSetupPayload,
     AuthSessionOut,
     ChangePasswordPayload,
     ForgotResetPayload,
@@ -28,6 +29,7 @@ from love_core.schemas import (
     RefreshPayload,
     RegisterPayload,
     UserProfileOut,
+    UserProfileUpdate,
 )
 
 router = APIRouter()
@@ -148,6 +150,21 @@ def me(ctx: Tuple[P0User, P0Session] = Depends(get_current_context)):
     return serialize_user(user)
 
 
+@router.put("/auth/me", response_model=UserProfileOut)
+def update_me(
+    payload: UserProfileUpdate,
+    ctx: Tuple[P0User, P0Session] = Depends(get_current_context),
+    db: Session = Depends(get_db),
+):
+    user, _ = ctx
+    if payload.nickname is not None:
+        user.nickname = payload.nickname.strip()
+    if payload.avatar is not None:
+        user.avatar = payload.avatar.strip()
+    db.commit()
+    return serialize_user(user)
+
+
 @router.post("/auth/forgot/send-code")
 def send_reset_code(payload: ForgotSendCodePayload, db: Session = Depends(get_db)):
     account = payload.account.strip()
@@ -218,3 +235,45 @@ def change_password(
     )
     db.commit()
     return {"success": True}
+
+
+@router.post("/auth/account/setup", response_model=AuthSessionOut)
+def account_setup(
+    payload: AccountSetupPayload,
+    request: Request,
+    ctx: Tuple[P0User, P0Session] = Depends(get_current_context),
+    db: Session = Depends(get_db),
+):
+    """临时用户（通过邀请码自动创建）设置正式账号名和密码。
+    
+    临时账号的 account 格式为 invite_xxx@love.local，设置后可以用正式账号密码登录。
+    已有正式账号的用户不能使用此接口（防止覆盖）。
+    """
+    user, current_session = ctx
+
+    # 只允许临时账号设置
+    if not user.account.endswith("@love.local"):
+        raise HTTPException(status_code=400, detail="Your account is already set up")
+
+    account = payload.account.strip().lower()
+    if not account or not payload.password:
+        raise HTTPException(status_code=400, detail="Account and password are required")
+    if len(payload.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    # 检查账号是否已被使用
+    exists = db.query(P0User).filter(P0User.account == account).first()
+    if exists:
+        raise HTTPException(status_code=409, detail="This account name is already taken")
+
+    # 更新账号信息
+    user.account = account
+    user.password_hash = hash_password(payload.password)
+    if payload.nickname:
+        user.nickname = payload.nickname.strip()
+
+    db.commit()
+
+    from love_core.deps import auth_session_payload, pair_status_for_user
+    pair_status = pair_status_for_user(db, user.id)
+    return auth_session_payload(db, user, current_session)

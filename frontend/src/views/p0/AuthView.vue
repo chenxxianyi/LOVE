@@ -129,14 +129,7 @@ async function afterAuth(session: AuthSession) {
 }
 
 function handleJoinByInvite() {
-  router.replace({
-    path: "/auth",
-    query: {
-      ...route.query,
-      next: "/couple/join",
-    },
-  });
-  ElMessage.info("Please login first, then we will redirect to invite join");
+  router.push("/couple/join");
 }
 
 function tryDevMockLogin(): boolean {

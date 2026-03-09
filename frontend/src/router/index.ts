@@ -44,7 +44,7 @@ const router = createRouter({
       path: "/couple/success",
       name: "couple-success",
       component: () => import("../views/p0/CoupleSuccessView.vue"),
-      meta: { hideLegacyShell: true },
+      meta: { public: true, hideLegacyShell: true },
     },
     {
       path: "/",
@@ -170,30 +170,46 @@ router.beforeEach((to, from, next) => {
   const prePairOnly = Boolean(to.meta.prePairOnly);
   const isSensitive = Boolean(to.meta.sensitive);
 
-  if (!authStore.isAuthenticated && !isPublic) {
+  // 兼容旧版暗号密码登录（useLoveStore.login() 会设置 localStorage.isLoggedIn）
+  const legacyLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  // 未登录状态：既没有 JWT token，也没有旧版暗号登录
+  const isAuthenticated = authStore.isAuthenticated || legacyLoggedIn;
+
+  if (!isAuthenticated && !isPublic) {
+    // 如果是预配对页（couple/join, couple/create），允许通过（邀请码就是认证）
+    if (prePairOnly) {
+      next();
+      return;
+    }
     next("/auth");
     return;
   }
 
-  if (authStore.isAuthenticated && (to.path === "/auth" || to.path === "/auth/forgot")) {
-    next(coupleStore.isPaired ? "/" : "/couple/create");
+  if (isAuthenticated && (to.path === "/auth" || to.path === "/auth/forgot")) {
+    next(coupleStore.isPaired ? "/" : "/");
     return;
   }
 
-  if (authStore.isAuthenticated && prePairOnly && coupleStore.isPaired) {
+  if (isAuthenticated && prePairOnly && coupleStore.isPaired) {
     next("/");
     return;
   }
 
-  if (authStore.isAuthenticated && !coupleStore.isPaired && requiresPair) {
+  if (isAuthenticated && !coupleStore.isPaired && requiresPair) {
+    // 旧版暗号登录不走配对流程，直接放行
+    if (legacyLoggedIn && !authStore.isAuthenticated) {
+      next();
+      return;
+    }
     next("/couple/create");
     return;
   }
 
-  if (authStore.isAuthenticated && isSensitive && !coupleStore.hasSensitiveAccess) {
+  if (isAuthenticated && isSensitive && !coupleStore.hasSensitiveAccess) {
     next("/settings/security");
     return;
   }
 
   next();
 });
+

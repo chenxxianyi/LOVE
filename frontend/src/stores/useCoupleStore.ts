@@ -101,6 +101,19 @@ export const useCoupleStore = defineStore("couple", () => {
     try {
       const response = await coupleApi.joinSpace(payload);
       setPairState(response.pair_status || "paired", response.space);
+      
+      // If the backend returned a session (auto-created user), save it
+      if ((response as any).session) {
+        const session = (response as any).session;
+        const { tokenStorage } = await import("../api/client");
+        tokenStorage.setTokens(session.access_token, session.refresh_token);
+        localStorage.setItem("isLoggedIn", "true");
+        // Update authStore so router guard sees user as authenticated
+        const { useAuthStore } = await import("./useAuthStore");
+        const authStore = useAuthStore();
+        authStore.setSession(session);
+      }
+      
       return response;
     } finally {
       loading.value = false;

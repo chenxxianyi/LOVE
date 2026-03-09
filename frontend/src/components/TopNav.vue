@@ -24,22 +24,55 @@
         <RouterLink to="/settings/security" class="link" active-class="active">安全</RouterLink>
       </nav>
 
+      <el-dropdown trigger="click" @command="handleCommand" class="user-dropdown">
+        <div class="user-entry" title="账号管理">
+          <el-avatar :size="32" :src="authStore.user?.avatar || defaultAvatar" class="user-avatar" />
+          <span class="user-name">{{ authStore.user?.nickname || '我' }}</span>
+          <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="profile">
+              <el-icon><User /></el-icon>个人中心
+            </el-dropdown-item>
+            <el-dropdown-item command="logout" divided>
+              <el-icon><SwitchButton /></el-icon>退出登录
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+
       <el-button type="primary" round @click="store.showAddMomentDialog = true" class="add-btn">
         新增回忆
       </el-button>
-      <el-button round @click="logout">退出</el-button>
     </div>
+
+    <UserProfileDialog v-model="showProfile" />
   </header>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useLoveStore } from "../stores/useLoveStore";
 import { useAuthStore } from "../stores/useAuthStore";
+import UserProfileDialog from "./profile/UserProfileDialog.vue";
+import { ArrowDown, User, SwitchButton } from "@element-plus/icons-vue";
 
 const store = useLoveStore();
 const authStore = useAuthStore();
 const router = useRouter();
+
+const showProfile = ref(false);
+const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+
+function handleCommand(command: string) {
+  if (command === "profile") {
+    showProfile.value = true;
+  } else if (command === "logout") {
+    logout();
+  }
+}
 
 function logout() {
   authStore.logout();
@@ -132,6 +165,41 @@ function logout() {
 
 .add-btn {
   flex-shrink: 0;
+}
+
+.user-dropdown {
+  flex-shrink: 0;
+}
+
+.user-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 20px;
+  transition: all 0.3s;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.user-entry:hover {
+  background: rgba(255, 192, 203, 0.15);
+  border-color: rgba(255, 192, 203, 0.4);
+}
+
+.user-avatar {
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.user-name {
+  font-size: 14px;
+  color: var(--text-main);
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 1024px) {

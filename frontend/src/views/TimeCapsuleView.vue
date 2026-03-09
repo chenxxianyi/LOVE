@@ -21,17 +21,24 @@
         :style="{ animationDelay: `${index * 50}ms` }"
         @click="openCapsule(item)"
       >
-        <div class="card-status">
+        <!-- Status Badge -->
+        <div class="status-badge">
           <span class="icon">{{ item.is_opened ? '🔓' : '🔒' }}</span>
           <span class="label">{{ item.is_opened ? '已开启' : '封印中' }}</span>
         </div>
         
+        <!-- Decorative elements for glass/card effect -->
+        <div class="card-glow"></div>
+        <div class="card-noise"></div>
+
         <div class="card-content">
           <p class="to">To: {{ item.receiver }}</p>
           <div class="preview">
-             <p v-if="item.is_opened">{{ item.content }}</p>
+             <p v-if="item.is_opened" class="unlocked-text">{{ item.content }}</p>
              <p v-else class="locked-text">
-               此信件将于 <span class="highlight">{{ item.open_at.split(' ')[0] }}</span> 开启
+               此信件将于<br/>
+               <span class="highlight date-chip">{{ item.open_at.split(' ')[0] }}</span><br/>
+               开启
              </p>
           </div>
           <p class="from">From: {{ item.sender }}</p>
@@ -193,58 +200,120 @@ const submit = async () => {
 }
 
 .capsule-card {
-  padding: 20px;
+  padding: 24px;
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
   display: flex;
   flex-direction: column;
-  height: 200px;
+  height: 220px;
+  border-radius: 20px;
+  
+  /* Unlocked defaults (warm / light) */
+  background: linear-gradient(135deg, rgba(255, 240, 240, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(228, 155, 171, 0.15);
+  backdrop-filter: blur(12px);
+  color: #5c3a2e;
+}
+
+/* Glassmorphism Shine */
+.capsule-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  transition: all 0.6s ease;
+  z-index: 1;
 }
 
 .capsule-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(228, 155, 171, 0.25);
 }
 
+.capsule-card:hover::before {
+  left: 200%;
+}
+
+/* Locked variations */
 .capsule-card.locked {
-  background: #f4f4f5;
-  color: #909399;
+  background: linear-gradient(135deg, rgba(235, 238, 245, 0.85) 0%, rgba(248, 250, 252, 0.6) 100%);
+  box-shadow: 0 8px 32px rgba(144, 147, 153, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #606266;
 }
 
 .capsule-card.locked:hover {
-  border-color: #dcdfe6;
+  box-shadow: 0 15px 35px rgba(144, 147, 153, 0.2);
 }
 
-.card-status {
+/* Status Badge Ribbon */
+.status-badge {
+  position: absolute;
+  top: 16px;
+  right: -8px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  font-weight: bold;
+  gap: 4px;
+  padding: 6px 16px 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 20px 0 0 20px;
+  box-shadow: -2px 4px 10px rgba(0,0,0,0.05);
+  z-index: 2;
+  /* Unlocked style */
+  background: linear-gradient(90deg, var(--primary-color) 0%, #ff8c9b 100%);
+  color: white;
 }
 
+.capsule-card.locked .status-badge {
+  /* Locked style */
+  background: linear-gradient(90deg, #909399 0%, #c0c4cc 100%);
+  color: white;
+}
+
+/* Content Layout */
 .card-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  z-index: 2;
+  position: relative;
 }
 
 .to, .from {
-  font-weight: 600;
+  font-family: "Georgia", serif; /* Elegant serif for intro/outro */
+  font-size: 15px;
+  font-weight: 700;
   margin: 0;
+  opacity: 0.9;
+}
+
+.from {
+  text-align: right;
 }
 
 .preview {
   flex: 1;
-  margin: 10px 0;
-  font-size: 14px;
+  margin: 16px 0;
+  font-size: 15px;
   line-height: 1.6;
   overflow: hidden;
-  color: var(--text-sub);
+  position: relative;
+}
+
+.unlocked-text {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: "KaiTi", "STKaiti", serif;
+  font-size: 16px;
 }
 
 .locked-text {
@@ -254,20 +323,38 @@ const submit = async () => {
   justify-content: center;
   height: 100%;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
+  color: #909399;
+  letter-spacing: 1px;
 }
 
-.highlight {
-  color: var(--primary-color);
+.date-chip {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  color: #606266;
+  font-family: monospace;
+  font-size: 16px;
   font-weight: bold;
-  margin: 4px 0;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #ebeef5;
 }
 
 .card-footer {
   margin-top: auto;
   font-size: 12px;
-  color: #c0c4cc;
-  text-align: right;
+  color: inherit;
+  opacity: 0.6;
+  text-align: left;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  padding-top: 12px;
+  z-index: 2;
+}
+
+.capsule-card.locked .card-footer {
+  border-top-color: rgba(0,0,0,0.05);
 }
 
 .letter-content {

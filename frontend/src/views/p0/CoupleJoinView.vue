@@ -21,17 +21,26 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
-import { useRouter } from "vue-router";
+import { reactive, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useCoupleStore } from "../../stores/useCoupleStore";
 
 const router = useRouter();
+const route = useRoute();
 const coupleStore = useCoupleStore();
 
 const form = reactive({
   invite_code: "",
   my_nickname: "",
+});
+
+onMounted(() => {
+  // 自动从 URL ?code= 参数填充邀请码
+  const codeFromUrl = route.query.code as string;
+  if (codeFromUrl) {
+    form.invite_code = codeFromUrl.trim().toUpperCase();
+  }
 });
 
 async function submit() {

@@ -5,7 +5,7 @@ import random
 import string
 from typing import Tuple
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -69,6 +69,7 @@ def create_couple_space(
 
 @router.post("/couple-space/invite", response_model=CoupleInviteResponse)
 def create_invite(
+    request: Request,
     ctx: Tuple[P0User, object] = Depends(get_current_context),
     db: Session = Depends(get_db),
 ):
@@ -89,7 +90,7 @@ def create_invite(
     invite = P0CoupleInvite(
         space_id=member.space_id,
         code=code,
-        expires_at=plus_str(hours=24),
+        expires_at=plus_str(minutes=30),
         created_by=user.id,
         used=False,
         created_at=now_str(),
@@ -97,22 +98,86 @@ def create_invite(
     db.add(invite)
     db.commit()
 
-    frontend_base = os.getenv("FRONTEND_BASE_URL", "http://localhost:5174").rstrip("/")
+    # 动态取前端地址：优先用 Origin header，其次用环境变量，最后 fallback
+    origin = request.headers.get("origin") or request.headers.get("referer", "")
+    if origin:
+        # 取 scheme://host:port 部分
+        from urllib.parse import urlparse
+        parsed = urlparse(origin)
+        frontend_base = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        frontend_base = os.getenv("FRONTEND_BASE_URL", "http://localhost:5174").rstrip("/")
+
     link = f"{frontend_base}/couple/join?code={code}"
     return CoupleInviteResponse(invite_code=code, invite_link=link, expires_at=invite.expires_at)
 
 
-@router.post("/couple-space/join", response_model=CoupleJoinResponse)
+@router.post("/couple-space/join")
 def join_couple_space(
     payload: CoupleJoinPayload,
-    ctx: Tuple[P0User, object] = Depends(get_current_context),
+    request: Request,
+    authorization: str = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    user, _ = ctx
+    """Join a couple space via invite code.
+    
+    Supports two flows:
+    1. Authenticated user (has Bearer token) → join directly.
+    2. Unauthenticated user (no token) → auto-create a user account
+       using my_nickname, then join.
+    """
+    from love_core.deps import (
+        create_session_for_user,
+        auth_session_payload,
+        parse_bearer_token,
+    )
+    from love_core.common import hash_password, generate_token
+    from love_core.models import P0Session
+
+    user = None
+
+    # Try to authenticate if token is provided
+    if authorization:
+        try:
+            access_token = parse_bearer_token(authorization)
+            session = (
+                db.query(P0Session)
+                .filter(P0Session.access_token == access_token, P0Session.revoked.is_(False))
+                .first()
+            )
+            if session and parse_dt(session.access_expires_at) >= now_dt():
+                user = db.query(P0User).filter(P0User.id == session.user_id).first()
+        except Exception:
+            pass  # Token invalid, will create a new user below
+
+    # If no authenticated user, auto-create one
+    if not user:
+        nickname = (payload.my_nickname or "").strip() or "新用户"
+        account = f"invite_{generate_code(8)}@love.local"
+        temp_password = generate_token()[:16]
+
+        user = P0User(
+            account=account,
+            password_hash=hash_password(temp_password),
+            nickname=nickname,
+            avatar=None,
+            created_at=now_str(),
+        )
+        db.add(user)
+        db.flush()
+
+
     existing_member = get_space_member(db, user.id)
     if existing_member:
         payload_space = get_space_payload(db, existing_member.space_id)
-        return CoupleJoinResponse(space=payload_space, pair_status=payload_space.pair_status)
+        # Return session info so frontend can store credentials
+        new_session = create_session_for_user(db, user, request)
+        db.commit()
+        return {
+            "space": payload_space.dict() if hasattr(payload_space, 'dict') else payload_space,
+            "pair_status": payload_space.pair_status,
+            "session": auth_session_payload(db, user, new_session).dict() if hasattr(auth_session_payload(db, user, new_session), 'dict') else auth_session_payload(db, user, new_session),
+        }
 
     invite = (
         db.query(P0CoupleInvite)
@@ -134,7 +199,7 @@ def join_couple_space(
     new_member = P0CoupleMember(
         space_id=invite.space_id,
         user_id=user.id,
-        nickname=payload.my_nickname.strip() or (user.nickname or user.account),
+        nickname=(payload.my_nickname or "").strip() or (user.nickname or user.account),
         role="B",
         joined_at=now_str(),
     )
@@ -155,10 +220,18 @@ def join_couple_space(
             "Your partner has joined the space successfully.",
             "system",
         )
+
+    # Create a session so the new user gets authenticated
+    new_session = create_session_for_user(db, user, request)
     db.commit()
 
     payload_space = get_space_payload(db, invite.space_id)
-    return CoupleJoinResponse(space=payload_space, pair_status=payload_space.pair_status)
+    session_payload = auth_session_payload(db, user, new_session)
+    return {
+        "space": payload_space.dict() if hasattr(payload_space, 'dict') else payload_space,
+        "pair_status": payload_space.pair_status,
+        "session": session_payload.dict() if hasattr(session_payload, 'dict') else session_payload,
+    }
 
 
 @router.get("/couple-space/me", response_model=CoupleSpaceOut)
