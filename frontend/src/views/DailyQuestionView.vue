@@ -6,9 +6,14 @@
           <h1 class="title-font">每日一问</h1>
           <p>每天一个问题，更懂彼此一点。</p>
         </div>
-        <el-button type="primary" round size="large" @click="showHistory = true">
-          问答档案馆
-        </el-button>
+        <div class="actions" style="display: flex; gap: 10px;">
+          <el-button type="primary" round size="large" @click="showHistory = true">
+            问答档案馆
+          </el-button>
+          <el-button round size="large" @click="showQuestionBank = true">
+            ⚙️ 题库管理
+          </el-button>
+        </div>
       </div>
     </header>
 
@@ -29,19 +34,24 @@
               type="textarea"
               :rows="3"
               placeholder="写下你的回答..."
-              v-if="!hasAnswered"
+              v-if="!hasAnswered && currentRole === 'A'"
             />
+            <p v-else-if="currentRole !== 'A' && !store.dailyQuestion.answer_a" class="waiting-text">
+              这是 A 的回答区域
+            </p>
             <el-button 
               type="primary" 
               size="small" 
               class="submit-btn" 
               @click="submitAnswer('answer_a')"
-              v-if="!hasAnswered"
+              v-if="!hasAnswered && currentRole === 'A'"
               :loading="loading"
             >
               提交
             </el-button>
-            <p v-else class="waiting-text">等待对方回答后解锁...</p>
+            <p v-else-if="hasAnswered && currentRole === 'A' && !store.dailyQuestion.answer_a" class="waiting-text">
+              等待对方回答后解锁...
+            </p>
           </div>
         </div>
 
@@ -57,19 +67,24 @@
               type="textarea"
               :rows="3"
               placeholder="写下你的回答..."
-              v-if="!hasAnswered"
+              v-if="!hasAnswered && currentRole === 'B'"
             />
+            <p v-else-if="currentRole !== 'B' && !store.dailyQuestion.answer_b" class="waiting-text">
+              这是 B 的回答区域
+            </p>
             <el-button 
               type="primary" 
               size="small" 
               class="submit-btn" 
               @click="submitAnswer('answer_b')"
-              v-if="!hasAnswered"
+              v-if="!hasAnswered && currentRole === 'B'"
               :loading="loading"
             >
               提交
             </el-button>
-            <p v-else class="waiting-text">等待对方回答后解锁...</p>
+            <p v-else-if="hasAnswered && currentRole === 'B' && !store.dailyQuestion.answer_b" class="waiting-text">
+              等待对方回答后解锁...
+            </p>
           </div>
         </div>
       </div>
@@ -96,18 +111,27 @@
         </div>
       </div>
     </el-drawer>
+
+    <!-- Question Bank Dialog -->
+    <QuestionBankDialog v-model="showQuestionBank" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useLoveStore } from "../stores/useLoveStore";
+import { useAuthStore } from "../stores/useAuthStore";
+import { useCoupleStore } from "../stores/useCoupleStore";
 import { ElMessage } from "element-plus";
+import QuestionBankDialog from "../components/QuestionBankDialog.vue";
 
 const store = useLoveStore();
+const authStore = useAuthStore();
+const coupleStore = useCoupleStore();
 const myAnswer = ref("");
 const loading = ref(false);
 const showHistory = ref(false);
+const showQuestionBank = ref(false);
 const hasAnswered = ref(false);
 
 // Ideally we should know which user is logged in (A or B)
@@ -118,6 +142,15 @@ const hasAnswered = ref(false);
 onMounted(async () => {
   await store.fetchDailyQuestion();
   await store.fetchQuestionHistory();
+  if (!coupleStore.space) {
+    await coupleStore.fetchSpace();
+  }
+});
+
+const currentRole = computed(() => {
+  if (!authStore.user || !coupleStore.space) return null;
+  const me = coupleStore.space.members.find(m => String(m.id) === String(authStore.user?.id));
+  return me?.role || null;
 });
 
 const isFullyAnswered = computed(() => {

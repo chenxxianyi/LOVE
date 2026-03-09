@@ -117,6 +117,14 @@ class Reminder(Base):
     status = Column(String(20), default="pending")    # pending | done | ignored
     created_at = Column(String(50))
 
+class QuestionBank(Base):
+    __tablename__ = "question_bank"
+
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(String(500))
+    target_date = Column(String(50), nullable=True) # "2024-05-20" or None
+    created_at = Column(String(50))
+
 # Dependency
 def get_db():
     db = SessionLocal()

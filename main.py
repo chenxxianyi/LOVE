@@ -10,7 +10,7 @@ import json
 import os
 import uuid
 
-from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, Reminder, get_db
+from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, Reminder, QuestionBank, get_db
 from love_core import router as core_router, init_p0_tables
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -170,6 +170,33 @@ class ReportResponse(BaseModel):
     total_images: int
     days_together: int
     latest_moment_date: Optional[str]
+
+class DailyQuestionResponse(BaseModel):
+    id: int
+    date: str
+    content: str
+    answer_a: Optional[str] = None
+    answer_b: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class QuestionBankBase(BaseModel):
+    content: str
+    target_date: Optional[str] = None
+
+class QuestionBankCreate(QuestionBankBase):
+    pass
+
+class QuestionBankResponse(QuestionBankBase):
+    id: int
+    created_at: str
+    
+    class Config:
+        from_attributes = True
+
+class ReminderBase(BaseModel):
+    pass
 
 class DailyQuestionBase(BaseModel):
     content: str
@@ -338,7 +365,7 @@ def get_info(db: Session = Depends(get_db)):
     }
 
 class InfoUpdate(BaseModel):
-    couple_name: Optional[str] = None
+    couple_names: Optional[str] = None
     start_date: Optional[str] = None
 
 @app.post("/api/info", response_model=dict)
@@ -352,8 +379,8 @@ def update_info(info_update: InfoUpdate, db: Session = Depends(get_db)):
         )
         db.add(db_info)
     
-    if info_update.couple_name:
-        db_info.couple_name = info_update.couple_name
+    if info_update.couple_names:
+        db_info.couple_name = info_update.couple_names
     if info_update.start_date:
         db_info.start_date = info_update.start_date
         
@@ -737,27 +764,79 @@ def get_today_question(db: Session = Depends(get_db)):
     db_question = db.query(DailyQuestion).filter(DailyQuestion.date == today).first()
     
     if not db_question:
-        # Create a random question if not exists
         import random
-        questions = [
-            "如果中彩票了第一件事做什么？",
-            "你最喜欢我哪一点？",
-            "如果可以穿越时空，你想去哪里？",
-            "我们第一次见面的场景你还记得吗？",
-            "你觉得我们最默契的一件事是什么？",
-            "最近一次让你感动的事情是什么？",
-            "如果我们要一起养一只宠物，你会选什么？",
-            "你觉得完美的周末应该怎么过？",
-            "如果世界末日来了，你想吃什么？",
-            "你最想和我一起完成的愿望是什么？"
-        ]
-        content = random.choice(questions)
+        # 1. 尝试寻找为今天【指定】的专属题库
+        target_question = db.query(QuestionBank).filter(QuestionBank.target_date == today).first()
+        if target_question:
+            content = target_question.content
+        else:
+            # 2. 没有指定问题，则从普通未指定日期的通用自定义题库中随机抽题
+            general_questions = db.query(QuestionBank).filter(
+                (QuestionBank.target_date == None) | (QuestionBank.target_date == "")
+            ).all()
+            if general_questions:
+                content = random.choice(general_questions).content
+            else:
+                # 3. 自定义题库里什么都没有，降级到内置保底默认题库
+                questions = [
+                    "如果中彩票了第一件事做什么？",
+                    "你最喜欢我哪一点？",
+                    "如果可以穿越时空，你想去哪里？",
+                    "我们第一次见面的场景你还记得吗？",
+                    "你觉得我们最默契的一件事是什么？",
+                    "最近一次让你感动的事情是什么？",
+                    "如果我们要一起养一只宠物，你会选什么？",
+                    "你觉得完美的周末应该怎么过？",
+                    "如果世界末日来了，你想吃什么？",
+                    "你最想和我一起完成的愿望是什么？"
+                ]
+                content = random.choice(questions)
+                
         db_question = DailyQuestion(date=today, content=content)
         db.add(db_question)
         db.commit()
         db.refresh(db_question)
         
     return db_question
+
+@app.get("/api/question_bank", response_model=List[QuestionBankResponse])
+def get_question_bank(db: Session = Depends(get_db)):
+    return db.query(QuestionBank).order_by(text("created_at DESC")).all()
+
+@app.post("/api/question_bank", response_model=QuestionBankResponse)
+def create_question_bank(item: QuestionBankCreate, db: Session = Depends(get_db)):
+    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    db_item = QuestionBank(
+        content=item.content,
+        target_date=item.target_date,
+        created_at=created_at
+    )
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.put("/api/question_bank/{id}", response_model=QuestionBankResponse)
+def update_question_bank(id: int, item: QuestionBankCreate, db: Session = Depends(get_db)):
+    db_item = db.query(QuestionBank).filter(QuestionBank.id == id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    db_item.content = item.content
+    db_item.target_date = item.target_date
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+@app.delete("/api/question_bank/{id}")
+def delete_question_bank(id: int, db: Session = Depends(get_db)):
+    db_item = db.query(QuestionBank).filter(QuestionBank.id == id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    db.delete(db_item)
+    db.commit()
+    return {"success": True}
 
 @app.post("/api/questions/{id}/answer", response_model=DailyQuestionResponse)
 def answer_question(id: int, answer: dict, db: Session = Depends(get_db)):

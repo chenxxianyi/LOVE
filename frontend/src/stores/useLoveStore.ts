@@ -86,6 +86,13 @@ export interface DailyQuestion {
   answer_b: string | null;
 }
 
+export interface QuestionBankItem {
+  id: number;
+  content: string;
+  target_date: string | null;
+  created_at: string;
+}
+
 export const useLoveStore = defineStore("love", {
   state: () => ({
     coupleName: "小鹿 & 小棠",
@@ -101,6 +108,7 @@ export const useLoveStore = defineStore("love", {
     reportData: null as ReportData | null,
     dailyQuestion: null as DailyQuestion | null,
     questionHistory: [] as DailyQuestion[],
+    questionBank: [] as QuestionBankItem[],
     wheelOptions: [
       { id: 1, text: "看电影", color: "#FF9A9E" },
       { id: 2, text: "吃火锅", color: "#FECFEF" },
@@ -225,9 +233,45 @@ export const useLoveStore = defineStore("love", {
         this.error = err.message;
       }
     },
-    async answerQuestion(id: number, answer: { answer_a?: string; answer_b?: string }) {
+    async fetchQuestionBank() {
       try {
-        const response = await axios.post(`http://localhost:8000/api/questions/${id}/answer`, answer);
+        const response = await axios.get("http://localhost:8000/api/question_bank");
+        this.questionBank = response.data;
+      } catch (err: any) {
+        console.error("Failed to fetch question bank:", err);
+        this.error = err.message;
+      }
+    },
+    async addQuestionBank(item: { content: string; target_date?: string | null }) {
+      try {
+        await axios.post("http://localhost:8000/api/question_bank", item);
+        await this.fetchQuestionBank();
+      } catch (err: any) {
+        console.error("Failed to add question bank item:", err);
+        throw err;
+      }
+    },
+    async updateQuestionBank(id: number, item: { content: string; target_date?: string | null }) {
+      try {
+        await axios.put(`http://localhost:8000/api/question_bank/${id}`, item);
+        await this.fetchQuestionBank();
+      } catch (err: any) {
+        console.error("Failed to update question bank item:", err);
+        throw err;
+      }
+    },
+    async deleteQuestionBank(id: number) {
+      try {
+        await axios.delete(`http://localhost:8000/api/question_bank/${id}`);
+        await this.fetchQuestionBank();
+      } catch (err: any) {
+        console.error("Failed to delete question bank item:", err);
+        throw err;
+      }
+    },
+    async answerQuestion(id: number, answerData: { answer_a?: string; answer_b?: string }) {
+      try {
+        const response = await axios.post(`http://localhost:8000/api/questions/${id}/answer`, answerData);
         this.dailyQuestion = response.data;
         return response.data;
       } catch (err: any) {
