@@ -5,7 +5,7 @@
 ## 项目状态
 
 - 前端开发端口：`http://localhost:5174`（见 `vite.config.ts`）
-- 后端 API 端口：`http://localhost:8000`（见 `backend/main.py`）
+- 后端 API 端口：`http://localhost:8000`（见项目根目录 `main.py`）
 - 登录口令（当前写死在前端）：`5201314`（见 `src/views/LoginView.vue`）
 - 已验证 `npm run build` 可正常打包
 
@@ -54,12 +54,12 @@ frontend/
 
 ### 1) 启动后端（FastAPI）
 
-后端在 `../backend`，前端所有请求默认指向 `http://localhost:8000`。
+后端在项目根目录，前端所有请求默认指向 `http://localhost:8000`。
 
 ```bash
-cd ../backend
+cd ..
 pip install -r requirements.txt
-python main.py
+python .\main.py
 ```
 
 默认会启动在：
@@ -68,7 +68,7 @@ python main.py
 - Swagger：`http://localhost:8000/docs`
 - 上传文件静态目录：`/uploads`
 
-注意：后端当前使用 MySQL（连接字符串在 `backend/database.py`），请先确保数据库可连接。
+注意：后端当前使用 MySQL（连接字符串在项目根目录 `database.py`），请先确保数据库可连接。
 
 ### 2) 启动前端
 

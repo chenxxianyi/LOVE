@@ -55,7 +55,7 @@ const router = createRouter({
     {
       path: "/timeline",
       name: "timeline",
-      component: () => import("../views/TimelineView.vue"),
+      component: () => import("../utils/device").then(m => m.isMobile() ? import("../views/mobile/TimelineView.vue") : import("../views/TimelineView.vue")),
       meta: { requiresPair: true },
     },
     {
@@ -91,7 +91,7 @@ const router = createRouter({
     {
       path: "/wheel",
       name: "wheel",
-      component: () => import("../views/LoveWheelView.vue"),
+      component: () => import("../utils/device").then(m => m.isMobile() ? import("../views/mobile/LoveWheelView.vue") : import("../views/LoveWheelView.vue")),
       meta: { requiresPair: true },
     },
     {

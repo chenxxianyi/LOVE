@@ -12,21 +12,21 @@
           <el-input v-model="form.my_nickname" maxlength="12" placeholder="例如：小鹿" />
         </el-form-item>
         <el-form-item label="在一起日期">
-          <el-date-picker
-            v-model="form.start_date"
-            type="date"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
+          <el-date-picker v-model="form.start_date" type="date" format="YYYY-MM-DD" value-format="YYYY-MM-DD"
+            style="width: 100%" />
         </el-form-item>
       </el-form>
 
       <div class="actions">
-        <el-button @click="handleLaterSetup">稍后设置</el-button>
-        <el-button type="primary" :loading="coupleStore.loading" @click="submit">
-          创建并继续
+        <el-button link type="primary" @click="goToLogin" class="login-link">
+          已有账号，去登录
         </el-button>
+        <div class="right-buttons">
+          <el-button @click="handleLaterSetup">稍后设置</el-button>
+          <el-button type="primary" :loading="coupleStore.loading" @click="submit">
+            创建并继续
+          </el-button>
+        </div>
       </div>
     </div>
   </section>
@@ -37,9 +37,11 @@ import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { useCoupleStore } from "../../stores/useCoupleStore";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 const router = useRouter();
 const coupleStore = useCoupleStore();
+const authStore = useAuthStore();
 
 const today = new Date().toISOString().slice(0, 10);
 const form = reactive({
@@ -51,6 +53,12 @@ const form = reactive({
 function handleLaterSetup() {
   ElMessage.info("可以稍后创建，先去输入邀请码加入");
   router.push("/couple/join");
+}
+
+function goToLogin() {
+  // Clearing auth state so that router guard won't redirect back to couple/create
+  authStore.logout();
+  router.push("/auth");
 }
 
 async function submit() {
@@ -93,7 +101,17 @@ async function submit() {
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.right-buttons {
+  display: flex;
   gap: 10px;
+}
+
+.login-link {
+  font-size: 14px;
 }
 </style>
