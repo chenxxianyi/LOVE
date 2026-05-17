@@ -14,6 +14,7 @@ import uuid
 
 from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, Reminder, QuestionBank, get_db
 from love_core import router as core_router, init_p0_tables
+from app.api.v1.router import api_router as api_v1_router
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
@@ -31,6 +32,8 @@ except Exception as e:
 
 app = FastAPI()
 app.include_router(core_router)
+app.include_router(core_router, prefix="/api")
+app.include_router(api_v1_router, prefix="/api/v1")
 
 # CORS
 app.add_middleware(
@@ -388,9 +391,12 @@ def update_info(info_update: InfoUpdate, db: Session = Depends(get_db)):
     return {"success": True}
 
 @app.get("/api/moments", response_model=List[MomentResponse])
-def get_moments(db: Session = Depends(get_db)):
-    moments = db.query(Moment).order_by(text("date DESC")).all()
-    # Map database fields to Pydantic model (snake_case to camelCase mapping handled manually or by config)
+def get_moments(
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    moments = db.query(Moment).order_by(text("date DESC")).offset(offset).limit(limit).all()
     return [
         MomentResponse(
             id=m.id,
@@ -405,6 +411,53 @@ def get_moments(db: Session = Depends(get_db)):
             hasVideo=m.has_video
         ) for m in moments
     ]
+
+@app.get("/api/dashboard")
+def get_dashboard(db: Session = Depends(get_db)):
+    """返回首页所需全部数据，一次请求替代 8 次。"""
+    info = db.query(Info).first()
+    if not info:
+        info = Info(couple_name="小鹿 & 小棠", start_date="2024-04-21", cover_image="")
+        db.add(info)
+        db.commit()
+        db.refresh(info)
+
+    start = datetime.strptime(info.start_date, "%Y-%m-%d").date()
+    today = date.today()
+    days_together = (today - start).days
+
+    try:
+        next_month_date = date(today.year, today.month, start.day)
+        if next_month_date < today:
+            next_month_date = date(today.year + 1 if today.month == 12 else today.year,
+                                  1 if today.month == 12 else today.month + 1, start.day)
+        days_left = (next_month_date - today).days
+    except ValueError:
+        days_left = 30
+
+    moment_count = db.query(Moment).count()
+    recent_moments = db.query(Moment).order_by(text("date DESC")).limit(10).all()
+
+    return {
+        "info": {
+            "coupleName": info.couple_name,
+            "todayMood": "今天也要认真相爱",
+            "dashboardStats": [
+                {"label": "在一起", "value": f"{days_together} 天", "hint": f"从 {info.start_date} 到今天"},
+                {"label": "共同回忆", "value": f"{moment_count} 条", "hint": "照片 + 视频 + 文字"},
+                {"label": "纪念日倒计时", "value": f"{days_left} 天", "hint": "下一次月纪念日"}
+            ],
+            "start_date": info.start_date
+        },
+        "recentMoments": [
+            {
+                "id": m.id, "title": m.title, "date": m.date,
+                "location": m.location, "mood": m.mood, "summary": m.summary,
+                "images": m.images if m.images else [],
+                "hasVideo": m.has_video
+            } for m in recent_moments
+        ]
+    }
 
 @app.post("/api/moments", response_model=MomentResponse)
 def create_moment(moment: MomentCreate, db: Session = Depends(get_db)):

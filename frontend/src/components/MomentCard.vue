@@ -13,7 +13,7 @@
         :class="`item-${i}`"
         @click="openGallery(i)"
       >
-        <img :src="imgUrl" :alt="`${item.title} - ${i}`" :class="{ 'img-blur': i === 3 && item.images.length > 4 }" />
+        <img :src="imgUrl" :alt="`${item.title} - ${i}`" loading="lazy" :class="{ 'img-blur': i === 3 && item.images.length > 4 }" />
         <div v-if="i === 3 && item.images.length > 4" class="more-overlay">
           +{{ item.images.length - 4 }}
         </div>

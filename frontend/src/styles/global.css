@@ -363,6 +363,63 @@ body {
   }
 }
 
+/* ── 加载骨架屏 ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skel-chip {
+  width: 120px; height: 24px;
+  border-radius: 999px;
+  background: var(--line-soft, rgba(0,0,0,0.06));
+  margin-bottom: 12px;
+}
+
+.skel-line {
+  height: 18px;
+  border-radius: 6px;
+  background: var(--line-soft, rgba(0,0,0,0.06));
+  margin-bottom: 10px;
+}
+
+.skel-line.w-60 { width: 60%; }
+.skel-line.w-80 { width: 80%; }
+
+.skel-btns {
+  display: flex; gap: 10px; margin-top: 18px;
+}
+
+.skel-btn {
+  width: 120px; height: 40px;
+  border-radius: 20px;
+  background: var(--line-soft, rgba(0,0,0,0.06));
+}
+
+.skel-img {
+  width: 100%; height: 200px;
+  border-radius: 14px;
+  background: var(--line-soft, rgba(0,0,0,0.06));
+}
+
+.skel-num {
+  width: 60px; height: 28px;
+  border-radius: 6px;
+  background: var(--line-soft, rgba(0,0,0,0.06));
+  margin: 0 auto 6px;
+}
+
+.skel-label {
+  width: 48px; height: 14px;
+  border-radius: 4px;
+  background: var(--line-soft, rgba(0,0,0,0.06));
+  margin: 0 auto;
+}
+
 @media (max-width: 768px) {
   .app-shell {
     flex-direction: column;

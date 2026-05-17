@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import axios from "axios";
+import { apiClient } from "../api/client";
 
 export interface DashboardStat {
   label: string;
@@ -141,7 +142,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchInfo() {
       try {
-        const response = await axios.get("http://localhost:8000/api/info");
+        const response = await apiClient.get("/info");
         this.coupleName = response.data.coupleName;
         this.todayMood = response.data.todayMood;
         this.dashboardStats = response.data.dashboardStats;
@@ -153,16 +154,16 @@ export const useLoveStore = defineStore("love", {
     },
     async updateInfo(data: { couple_names?: string; start_date?: string }) {
       try {
-        await axios.post("http://localhost:8000/api/info", data);
+        await apiClient.post("/info", data);
         await this.fetchInfo();
       } catch (err: any) {
         console.error("Failed to update info:", err);
         throw err;
       }
     },
-    async fetchMoments() {
+    async fetchMoments(limit = 50, offset = 0) {
       try {
-        const response = await axios.get("http://localhost:8000/api/moments");
+        const response = await apiClient.get("/moments", { params: { limit, offset } });
         this.moments = response.data;
       } catch (err: any) {
         console.error("Failed to fetch moments:", err);
@@ -171,7 +172,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchBucketList() {
       try {
-        const response = await axios.get("http://localhost:8000/api/bucket");
+        const response = await apiClient.get("/bucket");
         this.bucketList = response.data;
       } catch (err: any) {
         console.error("Failed to fetch bucket list:", err);
@@ -180,7 +181,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchCapsules() {
       try {
-        const response = await axios.get("http://localhost:8000/api/capsules");
+        const response = await apiClient.get("/capsules");
         this.capsules = response.data;
       } catch (err: any) {
         console.error("Failed to fetch capsules:", err);
@@ -189,7 +190,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchMusicList() {
       try {
-        const response = await axios.get("http://localhost:8000/api/music");
+        const response = await apiClient.get("/music");
         this.musicList = response.data;
       } catch (err: any) {
         console.error("Failed to fetch music list:", err);
@@ -198,7 +199,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchAnniversaries() {
       try {
-        const response = await axios.get("http://localhost:8000/api/anniversaries");
+        const response = await apiClient.get("/anniversaries");
         this.anniversaries = response.data;
       } catch (err: any) {
         console.error("Failed to fetch anniversaries:", err);
@@ -207,7 +208,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchCovers() {
       try {
-        const response = await axios.get("http://localhost:8000/api/covers");
+        const response = await apiClient.get("/covers");
         this.covers = response.data;
         this.setRandomCover();
       } catch (err: any) {
@@ -217,7 +218,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchReport() {
       try {
-        const response = await axios.get("http://localhost:8000/api/report");
+        const response = await apiClient.get("/report");
         this.reportData = response.data;
       } catch (err: any) {
         console.error("Failed to fetch report:", err);
@@ -226,7 +227,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchDailyQuestion() {
       try {
-        const response = await axios.get("http://localhost:8000/api/questions/today");
+        const response = await apiClient.get("/questions/today");
         this.dailyQuestion = response.data;
       } catch (err: any) {
         console.error("Failed to fetch daily question:", err);
@@ -235,7 +236,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchQuestionBank() {
       try {
-        const response = await axios.get("http://localhost:8000/api/question_bank");
+        const response = await apiClient.get("/question_bank");
         this.questionBank = response.data;
       } catch (err: any) {
         console.error("Failed to fetch question bank:", err);
@@ -244,7 +245,7 @@ export const useLoveStore = defineStore("love", {
     },
     async addQuestionBank(item: { content: string; target_date?: string | null }) {
       try {
-        await axios.post("http://localhost:8000/api/question_bank", item);
+        await apiClient.post("/question_bank", item);
         await this.fetchQuestionBank();
       } catch (err: any) {
         console.error("Failed to add question bank item:", err);
@@ -253,7 +254,7 @@ export const useLoveStore = defineStore("love", {
     },
     async updateQuestionBank(id: number, item: { content: string; target_date?: string | null }) {
       try {
-        await axios.put(`http://localhost:8000/api/question_bank/${id}`, item);
+        await apiClient.put(`/question_bank/${id}`, item);
         await this.fetchQuestionBank();
       } catch (err: any) {
         console.error("Failed to update question bank item:", err);
@@ -262,7 +263,7 @@ export const useLoveStore = defineStore("love", {
     },
     async deleteQuestionBank(id: number) {
       try {
-        await axios.delete(`http://localhost:8000/api/question_bank/${id}`);
+        await apiClient.delete(`/question_bank/${id}`);
         await this.fetchQuestionBank();
       } catch (err: any) {
         console.error("Failed to delete question bank item:", err);
@@ -271,7 +272,7 @@ export const useLoveStore = defineStore("love", {
     },
     async answerQuestion(id: number, answerData: { answer_a?: string; answer_b?: string }) {
       try {
-        const response = await axios.post(`http://localhost:8000/api/questions/${id}/answer`, answerData);
+        const response = await apiClient.post(`/questions/${id}/answer`, answerData);
         this.dailyQuestion = response.data;
         return response.data;
       } catch (err: any) {
@@ -281,7 +282,7 @@ export const useLoveStore = defineStore("love", {
     },
     async fetchQuestionHistory() {
       try {
-        const response = await axios.get("http://localhost:8000/api/questions/history");
+        const response = await apiClient.get("/questions/history");
         this.questionHistory = response.data;
       } catch (err: any) {
         console.error("Failed to fetch question history:", err);
@@ -291,21 +292,38 @@ export const useLoveStore = defineStore("love", {
     async fetchAll() {
       this.loading = true;
       this.error = null;
-      await Promise.all([
-        this.fetchInfo(), 
-        this.fetchMoments(), 
-        this.fetchBucketList(),
-        this.fetchCapsules(),
-        this.fetchMusicList(),
-        this.fetchAnniversaries(),
-        this.fetchCovers(),
-        this.fetchDailyQuestion()
-      ]);
+      try {
+        // 首页使用批量接口，1 次请求替代 8 次
+        const dash = await apiClient.get("/dashboard");
+        const d = dash.data;
+        // 填充 info
+        if (d.info) {
+          this.coupleName = d.info.coupleName;
+          this.todayMood = d.info.todayMood;
+          this.dashboardStats = d.info.dashboardStats;
+          this.startDate = d.info.start_date;
+        }
+        // 填充最近回忆
+        if (d.recentMoments) {
+          this.moments = d.recentMoments;
+        }
+        // 其他数据并行获取（非首页关键路径）
+        await Promise.all([
+          this.fetchBucketList(),
+          this.fetchCapsules(),
+          this.fetchMusicList(),
+          this.fetchAnniversaries(),
+          this.fetchCovers(),
+          this.fetchDailyQuestion()
+        ]);
+      } catch (err: any) {
+        console.error("Failed to fetch dashboard:", err);
+      }
       this.loading = false;
     },
     async createMoment(moment: Omit<MomentItem, "id">) {
       try {
-        const response = await axios.post("http://localhost:8000/api/moments", moment);
+        const response = await apiClient.post("/moments", moment);
         this.moments.unshift(response.data);
         // Refresh stats to update count
         this.fetchInfo();
@@ -317,7 +335,7 @@ export const useLoveStore = defineStore("love", {
     },
     async updateMoment(id: number, update: Partial<MomentItem>) {
       try {
-        const response = await axios.put(`http://localhost:8000/api/moments/${id}`, update);
+        const response = await apiClient.put(`/moments/${id}`, update);
         const index = this.moments.findIndex(m => m.id === id);
         if (index !== -1) {
           this.moments[index] = response.data;
@@ -330,7 +348,7 @@ export const useLoveStore = defineStore("love", {
     },
     async deleteMoment(id: number) {
       try {
-        await axios.delete(`http://localhost:8000/api/moments/${id}`);
+        await apiClient.delete(`/moments/${id}`);
         this.moments = this.moments.filter(m => m.id !== id);
         // Refresh stats to update count
         this.fetchInfo();
@@ -341,7 +359,7 @@ export const useLoveStore = defineStore("love", {
     },
     async createBucketItem(item: Omit<BucketItem, "id" | "created_at">) {
       try {
-        const response = await axios.post("http://localhost:8000/api/bucket", item);
+        const response = await apiClient.post("/bucket", item);
         this.bucketList.unshift(response.data);
         return response.data;
       } catch (err: any) {
@@ -351,7 +369,7 @@ export const useLoveStore = defineStore("love", {
     },
     async updateBucketItem(id: number, update: Partial<BucketItem>) {
       try {
-        const response = await axios.put(`http://localhost:8000/api/bucket/${id}`, update);
+        const response = await apiClient.put(`/bucket/${id}`, update);
         const index = this.bucketList.findIndex(i => i.id === id);
         if (index !== -1) {
           this.bucketList[index] = response.data;
@@ -364,7 +382,7 @@ export const useLoveStore = defineStore("love", {
     },
     async createCapsule(capsule: Omit<TimeCapsule, "id" | "created_at" | "is_opened">) {
       try {
-        const response = await axios.post("http://localhost:8000/api/capsules", capsule);
+        const response = await apiClient.post("/capsules", capsule);
         this.capsules.push(response.data);
         return response.data;
       } catch (err: any) {
@@ -374,7 +392,7 @@ export const useLoveStore = defineStore("love", {
     },
     async addMusic(music: Omit<MusicItem, "id">) {
       try {
-        const response = await axios.post("http://localhost:8000/api/music", music);
+        const response = await apiClient.post("/music", music);
         this.musicList.push(response.data);
         return response.data;
       } catch (err: any) {
@@ -384,7 +402,7 @@ export const useLoveStore = defineStore("love", {
     },
     async deleteMusic(id: number) {
       try {
-        await axios.delete(`http://localhost:8000/api/music/${id}`);
+        await apiClient.delete(`/music/${id}`);
         this.musicList = this.musicList.filter(m => m.id !== id);
       } catch (err: any) {
         console.error("Failed to delete music:", err);
@@ -393,7 +411,7 @@ export const useLoveStore = defineStore("love", {
     },
     async createAnniversary(item: Omit<AnniversaryItem, "id" | "days_left">) {
       try {
-        const response = await axios.post("http://localhost:8000/api/anniversaries", item);
+        const response = await apiClient.post("/anniversaries", item);
         this.anniversaries.push(response.data);
         // Sort again
         this.anniversaries.sort((a, b) => a.days_left - b.days_left);
@@ -405,7 +423,7 @@ export const useLoveStore = defineStore("love", {
     },
     async deleteAnniversary(id: number) {
       try {
-        await axios.delete(`http://localhost:8000/api/anniversaries/${id}`);
+        await apiClient.delete(`/anniversaries/${id}`);
         this.anniversaries = this.anniversaries.filter(a => a.id !== id);
       } catch (err: any) {
         console.error("Failed to delete anniversary:", err);
@@ -414,7 +432,7 @@ export const useLoveStore = defineStore("love", {
     },
     async addCover(url: string) {
       try {
-        const response = await axios.post("http://localhost:8000/api/covers", { url });
+        const response = await apiClient.post("/covers", { url });
         this.covers.push(response.data);
         return response.data;
       } catch (err: any) {
@@ -424,7 +442,7 @@ export const useLoveStore = defineStore("love", {
     },
     async deleteCover(id: number) {
       try {
-        await axios.delete(`http://localhost:8000/api/covers/${id}`);
+        await apiClient.delete(`/covers/${id}`);
         this.covers = this.covers.filter(c => c.id !== id);
       } catch (err: any) {
         console.error("Failed to delete cover:", err);
@@ -438,7 +456,7 @@ export const useLoveStore = defineStore("love", {
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await axios.post("http://localhost:8000/api/upload", formData, {
+        const response = await apiClient.post("/media/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

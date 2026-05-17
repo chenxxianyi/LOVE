@@ -9,6 +9,7 @@ const ACCESS_TOKEN_KEY = "love_access_token";
 const REFRESH_TOKEN_KEY = "love_refresh_token";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_PREFIX = "/api";
 
 interface RetryableConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -33,7 +34,7 @@ export const tokenStorage = {
 };
 
 export const apiClient = axios.create({
-  baseURL,
+  baseURL: `${baseURL}${API_PREFIX}`,
   timeout: 15000,
 });
 

@@ -6,7 +6,7 @@
                 @click="openGallery(i)">
                 <!-- Native img is much more reliable in CSS grids than wrapped components like van-image -->
                 <img :src="imgUrl" class="full-image" :class="{ 'img-blur': i === 3 && item.images.length > 4 }"
-                    alt="Memory Image" />
+                    alt="Memory Image" loading="lazy" />
                 <div v-if="i === 3 && item.images.length > 4" class="more-overlay">
                     +{{ item.images.length - 4 }}
                 </div>

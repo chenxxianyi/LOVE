@@ -1,7 +1,31 @@
 <template>
   <main class="page-frame-wide">
+    <!-- 加载骨架 -->
+    <template v-if="store.loading">
+      <section class="hero-card soft-card skeleton-pulse">
+        <div class="hero-text">
+          <div class="skel-chip"></div>
+          <div class="skel-line w-60"></div>
+          <div class="skel-line w-80"></div>
+          <div class="skel-btns">
+            <div class="skel-btn"></div>
+            <div class="skel-btn"></div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="skel-img"></div>
+        </div>
+      </section>
+      <section class="metric-strip soft-card skeleton-pulse">
+        <div class="metric-item" v-for="i in 3" :key="i">
+          <div class="skel-num"></div>
+          <div class="skel-label"></div>
+        </div>
+      </section>
+    </template>
+
     <!-- HeroCard: 唯一主视觉中心 -->
-    <section class="hero-card soft-card fade-up">
+    <section v-else class="hero-card soft-card fade-up">
       <div class="hero-text">
         <p class="glow-chip">我们的私人恋爱档案馆</p>
         <h1 class="title-font" @click="showInfoDialog = true" style="cursor: pointer" title="点击修改信息">
@@ -20,6 +44,7 @@
         <img
           :src="store.currentCover"
           alt="couple"
+          loading="lazy"
           @click="showCoverManager = true"
           title="点击更换封面"
           style="cursor: pointer; width: 100%; border-radius: 14px"
@@ -28,7 +53,7 @@
     </section>
 
     <!-- MetricStrip: 横向统计条 -->
-    <section class="metric-strip soft-card fade-up">
+    <section v-if="!store.loading" class="metric-strip soft-card fade-up">
       <div
         v-for="stat in store.dashboardStats"
         :key="stat.label"
@@ -39,8 +64,8 @@
       </div>
     </section>
 
-    <!-- 7:5 双栏 -->
-    <section class="home-grid">
+    <!-- 7:5 双栏 (loading 时隐藏内容区) -->
+    <section v-if="!store.loading" class="home-grid">
       <div class="home-main">
         <div class="section-head">
           <h2 class="title-font">最近的甜蜜瞬间</h2>
