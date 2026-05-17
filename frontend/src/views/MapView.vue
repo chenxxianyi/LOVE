@@ -1,15 +1,14 @@
 <template>
-  <div class="map-page">
-    <header class="map-head soft-card fade-up">
-      <h1 class="title-font">恋爱足迹地图</h1>
-      <p>记录我们一起走过的每一个角落，点亮属于我们的世界。</p>
-      <div class="map-stats" v-if="momentsWithCoords.length > 0">
-        <span class="stat-badge">
-          📍 {{ momentsWithCoords.length }} 个足迹
-        </span>
-        <span class="stat-badge">
-          🗺️ {{ uniqueLocations }} 座城市
-        </span>
+  <main class="page-frame-wide">
+    <!-- PageHeader: 轻量 -->
+    <header class="page-header fade-up">
+      <div>
+        <h1>恋爱足迹地图</h1>
+        <p>记录我们一起走过的每一个角落，点亮属于我们的世界。</p>
+      </div>
+      <div class="page-actions" v-if="momentsWithCoords.length > 0">
+        <span class="stat-chip">📍 {{ momentsWithCoords.length }} 足迹</span>
+        <span class="stat-chip">🗺️ {{ uniqueLocations }} 城市</span>
       </div>
     </header>
 
@@ -79,7 +78,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -183,44 +182,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.map-page {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-bottom: 20px;
-}
-
-.map-head {
-  padding: 20px;
-}
-
-.map-head h1 {
-  margin: 0 0 6px;
-  font-size: clamp(32px, 5vw, 48px);
-}
-
-.map-head p {
-  margin: 0 0 12px;
-  color: var(--text-sub);
-}
-
-.map-stats {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.stat-badge {
-  background: var(--primary-light, #fce4ec);
-  color: var(--primary-color, #e49bab);
+/* ── 统计芯片 ── */
+.stat-chip {
+  background: var(--accent-light, rgba(255, 179, 198, 0.15));
+  color: var(--accent-text, #D47080);
   padding: 4px 14px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
 }
 
+/* ── 地图主卡片 (唯一视觉中心) ── */
 .map-container {
-  height: 500px;
+  height: 560px;
   overflow: hidden;
   padding: 0;
   border-radius: 14px;

@@ -42,6 +42,10 @@
         </template>
       </el-dropdown>
 
+      <button class="theme-toggle" :title="themeHint" @click="cycleTheme">
+        {{ themeIcon }}
+      </button>
+
       <el-button type="primary" round @click="store.showAddMomentDialog = true" class="add-btn">
         新增回忆
       </el-button>
@@ -52,19 +56,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useLoveStore } from "../stores/useLoveStore";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useThemeStore, type ThemeMode } from "../stores/useThemeStore";
 import UserProfileDialog from "./profile/UserProfileDialog.vue";
 import { ArrowDown, User, SwitchButton } from "@element-plus/icons-vue";
 
 const store = useLoveStore();
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const router = useRouter();
 
 const showProfile = ref(false);
 const defaultAvatar = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png";
+
+/* ---- 主题切换 ---- */
+const themeOrder: ThemeMode[] = ["warm", "glass", "glass-dark"];
+const themeLabels: Record<ThemeMode, string> = {
+  warm: "暖阳",
+  glass: "冰璃",
+  "glass-dark": "暗璃",
+};
+
+const themeIcon = computed(() => {
+  if (themeStore.mode === "glass") return "🧊";
+  if (themeStore.mode === "glass-dark") return "🌙";
+  return "☀";
+});
+
+const themeHint = computed(() => {
+  const next = themeOrder[(themeOrder.indexOf(themeStore.mode) + 1) % themeOrder.length];
+  return `当前: ${themeLabels[themeStore.mode]} · 点击切换为 ${themeLabels[next]}`;
+});
+
+function cycleTheme() {
+  const idx = themeOrder.indexOf(themeStore.mode);
+  const next = themeOrder[(idx + 1) % themeOrder.length];
+  themeStore.setTheme(next);
+}
 
 function handleCommand(command: string) {
   if (command === "profile") {
@@ -200,6 +231,57 @@ function logout() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 主题切换按钮 */
+.theme-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line-soft);
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  background: var(--accent-light, rgba(255, 140, 160, 0.15));
+  border-color: var(--accent, #ff8ca0);
+  transform: scale(1.08);
+}
+
+[data-theme="glass"] .theme-toggle,
+[data-theme="glass-dark"] .theme-toggle {
+  background: var(--glass-bg-subtle);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+[data-theme="glass"] .theme-toggle:hover,
+[data-theme="glass-dark"] .theme-toggle:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border-hover);
+}
+
+/* Glass 主题下的导航链接适配 */
+[data-theme="glass"] .link:hover,
+[data-theme="glass-dark"] .link:hover {
+  color: var(--text-main);
+  background: var(--glass-bg-subtle);
+}
+
+[data-theme="glass"] .active,
+[data-theme="glass-dark"] .active {
+  color: var(--text-main);
+  background: var(--accent-light);
+  font-weight: 500;
 }
 
 @media (max-width: 1024px) {

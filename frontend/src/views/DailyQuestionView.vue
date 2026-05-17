@@ -1,19 +1,15 @@
 <template>
-  <div class="question-page">
-    <header class="page-head soft-card fade-up">
-      <div class="head-content">
-        <div>
-          <h1 class="title-font">每日一问</h1>
-          <p>每天一个问题，更懂彼此一点。</p>
-        </div>
-        <div class="actions" style="display: flex; gap: 10px;">
-          <el-button type="primary" round size="large" @click="showHistory = true">
-            问答档案馆
-          </el-button>
-          <el-button round size="large" @click="showQuestionBank = true">
-            ⚙️ 题库管理
-          </el-button>
-        </div>
+  <main class="page-frame-narrow">
+    <header class="page-header fade-up">
+      <div>
+        <h1>每日一问</h1>
+        <p>每天一个问题，更懂彼此一点。</p>
+      </div>
+      <div class="page-actions">
+        <el-button type="primary" round @click="showHistory = true">问答档案馆</el-button>
+        <el-button round @click="showQuestionBank = true">
+          <el-icon><Setting /></el-icon> 题库管理
+        </el-button>
       </div>
     </header>
 
@@ -114,7 +110,7 @@
 
     <!-- Question Bank Dialog -->
     <QuestionBankDialog v-model="showQuestionBank" />
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -123,6 +119,7 @@ import { useLoveStore } from "../stores/useLoveStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useCoupleStore } from "../stores/useCoupleStore";
 import { ElMessage } from "element-plus";
+import { Setting } from "@element-plus/icons-vue";
 import QuestionBankDialog from "../components/QuestionBankDialog.vue";
 
 const store = useLoveStore();
@@ -178,33 +175,6 @@ const submitAnswer = async (slot: 'answer_a' | 'answer_b') => {
 </script>
 
 <style scoped>
-.question-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding-bottom: 40px;
-}
-
-.page-head {
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.head-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.page-head h1 {
-  margin: 0 0 8px;
-  font-size: 32px;
-}
-
-.page-head p {
-  margin: 0;
-  color: var(--text-sub);
-}
-
 .question-container {
   padding: 50px 40px;
   text-align: center;

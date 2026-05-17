@@ -1,0 +1,395 @@
+/* ============================================
+   Liquid Glass Theme — 马卡龙色系 × 液态玻璃
+   Macaron palette + high-transparency liquid glass
+   Light + Dark
+   ============================================ */
+
+/* ============================================
+   马卡龙六色盘
+   ============================================ */
+:root {
+  --macaron-rose: #FFB3C6;
+  --macaron-peach: #FFD1B8;
+  --macaron-lemon: #FFF2B8;
+  --macaron-mint: #B8EBD4;
+  --macaron-sky: #B8D9FF;
+  --macaron-lavender: #D4C2F5;
+  --macaron-rose-soft: rgba(255, 179, 198, 0.25);
+  --macaron-peach-soft: rgba(255, 209, 184, 0.25);
+  --macaron-mint-soft: rgba(184, 235, 212, 0.22);
+  --macaron-lavender-soft: rgba(212, 194, 245, 0.22);
+  --macaron-sky-soft: rgba(184, 217, 255, 0.20);
+}
+
+/* ===== Liquid Glass Light ===== */
+[data-theme="glass"] {
+  /* ── 液态玻璃材质 (高透) ── */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-hover: rgba(255, 255, 255, 0.16);
+  --glass-bg-strong: rgba(255, 255, 255, 0.25);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-hover: rgba(255, 255, 255, 0.30);
+  --glass-border-strong: rgba(255, 255, 255, 0.45);
+  --glass-blur: 32px;
+  --glass-blur-nav: 36px;
+  --glass-blur-modal: 44px;
+
+  /* ── 彩色投影 (带马卡龙色调增强漂浮感) ── */
+  --glass-shadow-sm: 0 2px 12px rgba(200, 180, 200, 0.08),
+                     0 1px 4px rgba(255, 179, 198, 0.04);
+  --glass-shadow-md: 0 4px 24px rgba(200, 180, 200, 0.10),
+                     0 2px 8px rgba(255, 179, 198, 0.06);
+  --glass-shadow-lg: 0 8px 36px rgba(200, 180, 200, 0.12),
+                     0 4px 12px rgba(184, 217, 255, 0.06);
+  --glass-shadow-xl: 0 12px 48px rgba(200, 180, 200, 0.14),
+                     0 6px 16px rgba(255, 179, 198, 0.08);
+  --glass-shadow-hover: 0 16px 48px rgba(200, 180, 200, 0.16),
+                         0 6px 20px rgba(212, 194, 245, 0.10);
+
+  /* ── 文字 ── */
+  --text-main: #3a2a3a;
+  --text-sub: #7a6a7a;
+  --text-muted: #a090a0;
+
+  /* ── 强调色 (马卡龙玫瑰粉) ── */
+  --accent: #FFB3C6;
+  --accent-hover: #FF9AB0;
+  --accent-light: rgba(255, 179, 198, 0.25);
+  --accent-glow: rgba(255, 179, 198, 0.14);
+  --accent-text: #D47080;
+
+  /* ── 辅助强调色 ── */
+  --accent-mint: #B8EBD4;
+  --accent-sky: #B8D9FF;
+  --accent-lavender: #D4C2F5;
+  --accent-peach: #FFD1B8;
+
+  /* ── 圆角 ── */
+  --radius-card: 22px;
+  --radius-btn: 16px;
+  --radius-modal: 28px;
+  --radius-chip: 9999px;
+
+  /* ── 线条 ── */
+  --line-soft: rgba(180, 160, 180, 0.12);
+
+  /* ── 兼容旧变量映射 ── */
+  --bg-cream: #f5f0f8;
+  --bg-warm: #faf2f6;
+  --pink-soft: rgba(255, 179, 198, 0.20);
+  --pink-accent: #FFB3C6;
+  --pink-deep: #E890A0;
+  --peach: rgba(255, 209, 184, 0.35);
+  --card-shadow: var(--glass-shadow-md);
+}
+
+/* ===== Liquid Glass Dark ===== */
+[data-theme="glass-dark"] {
+  /* ── 液态玻璃材质 (暗色高透) ── */
+  --glass-bg: rgba(25, 22, 38, 0.25);
+  --glass-bg-hover: rgba(35, 30, 50, 0.38);
+  --glass-bg-strong: rgba(42, 36, 58, 0.45);
+  --glass-bg-subtle: rgba(25, 22, 38, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  --glass-border-strong: rgba(255, 255, 255, 0.20);
+  --glass-blur: 36px;
+  --glass-blur-nav: 40px;
+  --glass-blur-modal: 48px;
+
+  /* ── 彩色投影 (暗色下用紫色调) ── */
+  --glass-shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.18),
+                     0 1px 4px rgba(160, 120, 200, 0.06);
+  --glass-shadow-md: 0 4px 24px rgba(0, 0, 0, 0.25),
+                     0 2px 8px rgba(140, 100, 180, 0.08);
+  --glass-shadow-lg: 0 8px 36px rgba(0, 0, 0, 0.30),
+                     0 4px 12px rgba(120, 80, 160, 0.10);
+  --glass-shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.35),
+                     0 6px 16px rgba(140, 100, 180, 0.12);
+  --glass-shadow-hover: 0 16px 52px rgba(0, 0, 0, 0.35),
+                         0 6px 20px rgba(160, 140, 200, 0.14);
+
+  /* ── 文字 ── */
+  --text-main: #f0e8f0;
+  --text-sub: #b0a0b0;
+  --text-muted: #807080;
+
+  /* ── 强调色 ── */
+  --accent: #FFB3C6;
+  --accent-hover: #FFC4D2;
+  --accent-light: rgba(255, 179, 198, 0.18);
+  --accent-glow: rgba(255, 179, 198, 0.08);
+  --accent-text: #FFB3C6;
+
+  /* ── 辅助强调色 ── */
+  --accent-mint: #B8EBD4;
+  --accent-sky: #B8D9FF;
+  --accent-lavender: #D4C2F5;
+  --accent-peach: #FFD1B8;
+
+  /* ── 圆角 ── */
+  --radius-card: 22px;
+  --radius-btn: 16px;
+  --radius-modal: 28px;
+  --radius-chip: 9999px;
+
+  /* ── 线条 ── */
+  --line-soft: rgba(255, 255, 255, 0.05);
+
+  /* ── 兼容旧变量映射 ── */
+  --bg-cream: #19162a;
+  --bg-warm: #1e1a30;
+  --pink-soft: rgba(255, 179, 198, 0.12);
+  --pink-accent: #FFB3C6;
+  --pink-deep: #FFC4D2;
+  --peach: rgba(255, 209, 184, 0.16);
+  --card-shadow: var(--glass-shadow-md);
+}
+
+/* ===== Element Plus 覆盖 (Liquid Glass Light) ===== */
+[data-theme="glass"] {
+  --el-color-primary: var(--accent);
+  --el-color-primary-light-3: rgba(255, 179, 198, 0.55);
+  --el-color-primary-light-5: rgba(255, 179, 198, 0.35);
+  --el-color-primary-dark-2: var(--accent-hover);
+  --el-text-color-primary: var(--text-main);
+  --el-text-color-regular: var(--text-sub);
+  --el-fill-color-light: rgba(255, 255, 255, 0.12);
+  --el-border-color: rgba(180, 160, 180, 0.10);
+  --el-border-radius-base: 14px;
+  --el-bg-color: rgba(255, 255, 255, 0.22);
+  --el-bg-color-overlay: rgba(255, 255, 255, 0.42);
+}
+
+/* ===== Element Plus 覆盖 (Liquid Glass Dark) ===== */
+[data-theme="glass-dark"] {
+  --el-color-primary: var(--accent);
+  --el-color-primary-light-3: rgba(255, 179, 198, 0.35);
+  --el-color-primary-light-5: rgba(255, 179, 198, 0.20);
+  --el-color-primary-dark-2: var(--accent-hover);
+  --el-text-color-primary: var(--text-main);
+  --el-text-color-regular: var(--text-sub);
+  --el-fill-color-light: rgba(255, 255, 255, 0.04);
+  --el-border-color: rgba(255, 255, 255, 0.05);
+  --el-border-radius-base: 14px;
+  --el-bg-color: rgba(25, 22, 38, 0.40);
+  --el-bg-color-overlay: rgba(25, 22, 38, 0.62);
+}
+
+/* ============================================
+   液态玻璃卡片 — 核心组件类
+   ============================================ */
+
+/* ── 玻璃卡片 ── */
+[data-theme="glass"] .soft-card,
+[data-theme="glass-dark"] .soft-card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card, 22px);
+  backdrop-filter: blur(var(--glass-blur, 28px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 28px));
+  box-shadow: var(--glass-shadow-md);
+  overflow: hidden;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1.0),
+              box-shadow 0.45s ease,
+              background 0.5s ease,
+              border-color 0.5s ease;
+}
+
+/* ── 液态光泽层 ── */
+[data-theme="glass"] .soft-card::before,
+[data-theme="glass-dark"] .soft-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  /* 对角线光泽扫描线 — 模拟液态玻璃折射 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.18) 18%,
+    rgba(255, 255, 255, 0.04) 38%,
+    transparent 52%,
+    rgba(255, 255, 255, 0.03) 70%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  opacity: 0.80;
+  transition: opacity 0.4s ease;
+}
+
+[data-theme="glass-dark"] .soft-card::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 20%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.02) 70%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  opacity: 0.60;
+}
+
+/* ── 彩虹色膜 (粉紫渐变马卡龙 iridescence) ── */
+[data-theme="glass"] .soft-card::after,
+[data-theme="glass-dark"] .soft-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 179, 198, 0.10) 0%,
+    rgba(255, 209, 184, 0.06) 22%,
+    rgba(212, 194, 245, 0.08) 50%,
+    rgba(255, 179, 198, 0.05) 75%,
+    rgba(212, 194, 245, 0.10) 100%
+  );
+  opacity: 0.75;
+}
+
+[data-theme="glass-dark"] .soft-card::after {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 179, 198, 0.06) 0%,
+    rgba(212, 194, 245, 0.05) 40%,
+    rgba(255, 179, 198, 0.03) 65%,
+    rgba(212, 194, 245, 0.07) 100%
+  );
+  opacity: 0.60;
+}
+
+/* 卡片内容需置于光泽层之上 */
+[data-theme="glass"] .soft-card > *,
+[data-theme="glass-dark"] .soft-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Hover 状态 ── */
+[data-theme="glass"] .soft-card:hover,
+[data-theme="glass-dark"] .soft-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+[data-theme="glass"] .soft-card:hover::before,
+[data-theme="glass-dark"] .soft-card:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   导航栏液态玻璃
+   ============================================ */
+[data-theme="glass"] .nav-wrap,
+[data-theme="glass-dark"] .nav-wrap {
+  position: relative;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-nav, 32px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-nav, 32px));
+  box-shadow: var(--glass-shadow-sm);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* 导航光泽 */
+[data-theme="glass"] .nav-wrap::before,
+[data-theme="glass-dark"] .nav-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    transparent 50%
+  );
+  opacity: 0.85;
+}
+
+[data-theme="glass-dark"] .nav-wrap::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.02) 25%,
+    transparent 45%
+  );
+  opacity: 0.70;
+}
+
+[data-theme="glass"] .nav-wrap > *,
+[data-theme="glass-dark"] .nav-wrap > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   芯片/标签液态玻璃
+   ============================================ */
+[data-theme="glass"] .glow-chip,
+[data-theme="glass-dark"] .glow-chip {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: var(--radius-chip);
+  color: var(--text-sub);
+  box-shadow: 
+    0 1px 6px rgba(200, 180, 200, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   主题切换过渡 — 液态流动感
+   ============================================ */
+html[data-theme] body {
+  transition: background 0.8s ease;
+}
+
+html[data-theme] .soft-card,
+html[data-theme] .nav-wrap,
+html[data-theme] .glow-chip,
+html[data-theme] .el-button,
+html[data-theme] .el-input__wrapper,
+html[data-theme] .el-dialog {
+  transition: background 0.6s ease,
+              border-color 0.6s ease,
+              box-shadow 0.6s ease,
+              backdrop-filter 0.6s ease,
+              color 0.5s ease;
+}
+
+/* ============================================
+   可选：强调色变体 chip 类
+   ============================================ */
+.glow-chip.accent-rose {
+  background: var(--macaron-rose-soft);
+  border-color: rgba(255, 179, 198, 0.35);
+}
+.glow-chip.accent-mint {
+  background: var(--macaron-mint-soft);
+  border-color: rgba(184, 235, 212, 0.35);
+}
+.glow-chip.accent-sky {
+  background: var(--macaron-sky-soft);
+  border-color: rgba(184, 217, 255, 0.35);
+}
+.glow-chip.accent-lavender {
+  background: var(--macaron-lavender-soft);
+  border-color: rgba(212, 194, 245, 0.35);
+}
+.glow-chip.accent-peach {
+  background: var(--macaron-peach-soft);
+  border-color: rgba(255, 209, 184, 0.35);
+}

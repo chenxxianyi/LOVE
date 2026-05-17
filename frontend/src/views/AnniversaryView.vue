@@ -1,14 +1,12 @@
 <template>
-  <div class="anniversary-page">
-    <header class="page-head soft-card fade-up">
-      <div class="head-content">
-        <div>
-          <h1 class="title-font">纪念日</h1>
-          <p>每一个特别的日子，都值得被铭记。</p>
-        </div>
-        <el-button type="primary" round size="large" @click="showAddDialog = true">
-          添加纪念日
-        </el-button>
+  <main class="page-frame-narrow">
+    <header class="page-header fade-up">
+      <div>
+        <h1>纪念日</h1>
+        <p>每一个特别的日子，都值得被铭记。</p>
+      </div>
+      <div class="page-actions">
+        <el-button type="primary" round @click="showAddDialog = true">添加纪念日</el-button>
       </div>
     </header>
 
@@ -35,7 +33,7 @@
           </div>
           <el-button
             type="text"
-            icon="Delete"
+            :icon="Delete"
             class="delete-btn"
             @click="handleDelete(item.id)"
           ></el-button>
@@ -76,7 +74,7 @@
         </span>
       </template>
     </el-dialog>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -138,33 +136,6 @@ const handleDelete = async (id: number) => {
 </script>
 
 <style scoped>
-.anniversary-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding-bottom: 40px;
-}
-
-.page-head {
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.head-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.page-head h1 {
-  margin: 0 0 8px;
-  font-size: 32px;
-}
-
-.page-head p {
-  margin: 0;
-  color: var(--text-sub);
-}
-
 .event-grid {
   display: flex;
   flex-direction: column;

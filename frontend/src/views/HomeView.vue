@@ -1,59 +1,79 @@
 <template>
-  <div class="home-page">
-    <section class="hero soft-card fade-up">
+  <main class="page-frame-wide">
+    <!-- HeroCard: 唯一主视觉中心 -->
+    <section class="hero-card soft-card fade-up">
       <div class="hero-text">
         <p class="glow-chip">我们的私人恋爱档案馆</p>
         <h1 class="title-font" @click="showInfoDialog = true" style="cursor: pointer" title="点击修改信息">
           {{ store.coupleName }}
-          <el-icon size="20" class="edit-icon"><Edit /></el-icon>
+          <el-icon :size="18" class="edit-icon"><Edit /></el-icon>
         </h1>
-        <p class="desc">
-          用照片、视频和文字，慢慢收藏每一段日常。这里不需要完美，只记录你们真实又温柔的片段。
+        <p class="hero-desc">
+          用照片、视频和文字，慢慢收藏每一段日常。
         </p>
         <div class="hero-actions">
           <el-button type="primary" size="large" round @click="store.showAddMomentDialog = true">写一条回忆</el-button>
-          <el-button size="large" round plain>上传照片/视频</el-button>
+          <el-button size="large" round plain @click="showCoverManager = true">更换封面</el-button>
         </div>
       </div>
-      <div class="hero-cover">
+      <div class="hero-visual">
         <img
           :src="store.currentCover"
           alt="couple"
           @click="showCoverManager = true"
           title="点击更换封面"
-          style="cursor: pointer"
+          style="cursor: pointer; width: 100%; border-radius: 14px"
         />
       </div>
     </section>
 
-    <section class="stats">
-      <article
-        v-for="(stat, idx) in store.dashboardStats"
+    <!-- MetricStrip: 横向统计条 -->
+    <section class="metric-strip soft-card fade-up">
+      <div
+        v-for="stat in store.dashboardStats"
         :key="stat.label"
-        class="stat-item soft-card fade-up"
-        :style="{ animationDelay: `${idx * 60}ms` }"
+        class="metric-item"
       >
-        <p>{{ stat.label }}</p>
-        <h2 class="title-font">{{ stat.value }}</h2>
-        <small>{{ stat.hint }}</small>
-      </article>
+        <div class="metric-value title-font">{{ stat.value }}</div>
+        <div class="metric-label">{{ stat.label }}</div>
+      </div>
     </section>
 
-    <section class="featured">
-      <div class="featured-head">
-        <h2 class="title-font">最近的甜蜜瞬间</h2>
-        <RouterLink to="/timeline">查看全部</RouterLink>
+    <!-- 7:5 双栏 -->
+    <section class="home-grid">
+      <div class="home-main">
+        <div class="section-head">
+          <h2 class="title-font">最近的甜蜜瞬间</h2>
+          <RouterLink to="/timeline" class="section-link">查看全部 →</RouterLink>
+        </div>
+        <div class="content-grid">
+          <MomentCard
+            v-for="(item, index) in store.moments.slice(0, 4)"
+            :key="item.id"
+            :item="item"
+            :index="index"
+            @edit="handleEdit"
+            @delete="handleDelete"
+          />
+        </div>
       </div>
-      <div class="featured-grid">
-        <MomentCard
-          v-for="(item, index) in store.moments.slice(0, 2)"
-          :key="item.id"
-          :item="item"
-          :index="index"
-          @edit="handleEdit"
-          @delete="handleDelete"
-        />
-      </div>
+      <aside class="home-aside">
+        <div class="soft-card aside-card fade-up">
+          <h3 class="aside-title">💬 今日问题</h3>
+          <p class="aside-text">去看看今天的问题吧</p>
+          <RouterLink to="/question" class="aside-link">去回答 →</RouterLink>
+        </div>
+        <div class="soft-card aside-card fade-up">
+          <h3 class="aside-title">💝 纪念日</h3>
+          <p class="aside-text">查看你们的特别日子</p>
+          <RouterLink to="/anniversary" class="aside-link">去看看 →</RouterLink>
+        </div>
+        <div class="soft-card aside-card fade-up">
+          <h3 class="aside-title">🗺️ 足迹地图</h3>
+          <p class="aside-text">标记一起去过的地方</p>
+          <RouterLink to="/map" class="aside-link">去看看 →</RouterLink>
+        </div>
+      </aside>
     </section>
 
     <!-- Cover Manager Dialog -->
@@ -116,7 +136,7 @@
       :edit-data="currentEditItem"
       @success="store.fetchMoments"
     />
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -219,12 +239,7 @@ const handleDelete = async (id: number) => {
 </script>
 
 <style scoped>
-.home-page {
-  position: relative;
-}
-
-/* ... existing styles ... */
-
+/* ── Dialog 样式 (保留) ── */
 .cover-manager {
   padding: 10px;
 }
@@ -259,7 +274,7 @@ const handleDelete = async (id: number) => {
 }
 
 .cover-item.active {
-  border-color: var(--primary-color);
+  border-color: var(--accent, #FFB3C6);
 }
 
 .cover-item img {
@@ -301,30 +316,12 @@ const handleDelete = async (id: number) => {
   opacity: 1;
 }
 
-.hero,
-.stats,
-.featured {
-  position: relative;
-  z-index: 19;
-}
-
-.hero {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 22px;
-  padding: 22px;
-}
-
-.hero-text h1 {
-  margin: 8px 0 8px;
-  font-size: clamp(32px, 5vw, 52px);
-  line-height: 1;
-}
-
-.desc {
+/* ── Hero 卡片细调 ── */
+.hero-desc {
   color: var(--text-sub);
-  line-height: 1.8;
-  margin-bottom: 18px;
+  line-height: 1.7;
+  margin: 10px 0 18px;
+  max-width: 440px;
 }
 
 .hero-actions {
@@ -333,82 +330,51 @@ const handleDelete = async (id: number) => {
   gap: 10px;
 }
 
-.hero-cover {
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--line-soft);
+/* ── Section 标题 ── */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
 }
 
-.hero-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.stats {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.stat-item {
-  padding: 14px 16px;
-}
-
-.stat-item p {
+.section-head h2 {
   margin: 0;
+  font-size: 26px;
+}
+
+.section-link {
+  color: var(--accent-text, #D47080);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* ── 右侧快捷卡片 ── */
+.aside-card {
+  padding: 20px;
+  border-radius: 18px;
+  transition: transform 0.3s ease;
+}
+
+.aside-card:hover {
+  transform: translateY(-2px);
+}
+
+.aside-title {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--text-main);
+}
+
+.aside-text {
+  margin: 0 0 10px;
   font-size: 13px;
   color: var(--text-sub);
 }
 
-.stat-item h2 {
-  margin: 6px 0;
-  font-size: 32px;
-}
-
-.stat-item small {
-  color: var(--text-sub);
-}
-
-.featured {
-  margin-top: 22px;
-}
-
-.featured-head {
-  margin-bottom: 10px;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.featured-head h2 {
-  margin: 0;
-  font-size: 34px;
-}
-
-.featured-head a {
-  color: var(--pink-deep);
+.aside-link {
+  font-size: 13px;
+  color: var(--accent-text, #D47080);
   text-decoration: none;
-}
-
-.featured-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-@media (max-width: 900px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .stats {
-    grid-template-columns: 1fr;
-  }
-
-  .featured-grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

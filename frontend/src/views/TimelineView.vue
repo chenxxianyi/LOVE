@@ -1,15 +1,21 @@
 <template>
-  <section class="timeline-page">
-    <header class="timeline-head soft-card fade-up">
-      <h1 class="title-font">时光时间线</h1>
-      <p>把每次约会、旅行、深夜小事都串成一条长长的温柔轨迹。</p>
+  <main class="page-frame">
+    <!-- PageHeader: 轻量 -->
+    <header class="page-header fade-up">
+      <div>
+        <h1>时光时间线</h1>
+        <p>把每次约会、旅行、深夜小事都串成一条长长的温柔轨迹。</p>
+      </div>
     </header>
 
-    <section class="filters soft-card fade-up">
-      <el-input v-model="keyword" clearable placeholder="搜索关键字（如：海边、做饭）">
-        <template #prefix>🔎</template>
+    <!-- FilterBar: 轻量筛选 -->
+    <section class="filter-bar soft-card fade-up">
+      <el-input v-model="keyword" clearable placeholder="搜索关键字（如：海边、做饭）" style="flex:1; min-width:180px">
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
       </el-input>
-      <el-select v-model="mood" clearable placeholder="按心情筛选">
+      <el-select v-model="mood" clearable placeholder="按心情筛选" style="width:150px">
         <el-option label="心动" value="心动" />
         <el-option label="治愈" value="治愈" />
         <el-option label="浪漫" value="浪漫" />
@@ -22,6 +28,7 @@
       />
     </section>
 
+    <!-- Timeline content -->
     <el-timeline class="timeline-list">
       <el-timeline-item
         v-for="(item, index) in filteredMoments"
@@ -45,7 +52,7 @@
       :edit-data="currentEditItem"
       @success="store.fetchMoments"
     />
-  </section>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -54,6 +61,7 @@ import MomentCard from "../components/MomentCard.vue";
 import AddMomentForm from "../components/AddMomentForm.vue";
 import { useLoveStore, type MomentItem } from "../stores/useLoveStore";
 import { ElMessageBox, ElMessage } from "element-plus";
+import { Search } from "@element-plus/icons-vue";
 
 const store = useLoveStore();
 const keyword = ref("");
@@ -107,44 +115,11 @@ const filteredMoments = computed(() => {
 </script>
 
 <style scoped>
-.timeline-page {
-  padding-bottom: 20px;
-}
-
-.timeline-head {
-  padding: 20px;
-}
-
-.timeline-head h1 {
-  margin: 0 0 6px;
-  font-size: clamp(32px, 5vw, 48px);
-}
-
-.timeline-head p {
-  margin: 0;
-  color: var(--text-sub);
-}
-
-.filters {
-  margin-top: 14px;
-  padding: 14px;
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) 180px 120px;
-  gap: 10px;
-  align-items: center;
-}
-
 .timeline-list {
-  margin-top: 18px;
+  margin-top: 4px;
 }
 
 :deep(.el-timeline-item__timestamp) {
   color: #9a7a72;
-}
-
-@media (max-width: 900px) {
-  .filters {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

@@ -1,24 +1,28 @@
-:root {
-  --bg-cream: #fff8f2;
-  --bg-warm: #ffefe3;
-  --pink-soft: #f9d7df;
-  --pink-accent: #f4b8c4;
-  --pink-deep: #e49bab;
-  --peach: #f7c9a8;
-  --text-main: #5a463a;
-  --text-sub: #8a7568;
-  --line-soft: #f3e3d9;
-  --card-shadow: 0 10px 24px rgba(212, 155, 142, 0.18);
+/* ===== Warm Theme (默认) — 马卡龙柔和色盘 ===== */
+:root,
+[data-theme="warm"] {
+  --bg-cream: #fdf6f8;
+  --bg-warm: #fef4ef;
+  --pink-soft: rgba(255, 179, 198, 0.28);
+  --pink-accent: #FFB3C6;
+  --pink-deep: #E890A0;
+  --peach: #FFD1B8;
+  --text-main: #4a3a40;
+  --text-sub: #8a7078;
+  --line-soft: #f0e0e8;
+  --card-shadow: 0 10px 28px rgba(200, 170, 180, 0.16);
 }
 
-:root {
+/* ===== Element Plus 变量 (Warm) ===== */
+:root,
+[data-theme="warm"] {
   --el-color-primary: var(--pink-accent);
-  --el-color-primary-light-3: #f7c8d1;
-  --el-color-primary-light-5: #f9d6dd;
+  --el-color-primary-light-3: rgba(255, 179, 198, 0.60);
+  --el-color-primary-light-5: rgba(255, 179, 198, 0.35);
   --el-color-primary-dark-2: var(--pink-deep);
   --el-text-color-primary: var(--text-main);
   --el-text-color-regular: var(--text-sub);
-  --el-fill-color-light: #fff3ea;
+  --el-fill-color-light: #fef2f5;
   --el-border-color: var(--line-soft);
   --el-border-radius-base: 12px;
 }

@@ -1,14 +1,12 @@
 <template>
-  <div class="capsule-page">
-    <header class="capsule-head soft-card fade-up">
-      <div class="head-content">
-        <div>
-          <h1 class="title-font">时光胶囊</h1>
-          <p>给未来的我们写一封信，封存此刻的心意。</p>
-        </div>
-        <el-button type="primary" round size="large" @click="showAddDialog = true">
-          埋下胶囊
-        </el-button>
+  <main class="page-frame">
+    <header class="page-header fade-up">
+      <div>
+        <h1>时光胶囊</h1>
+        <p>给未来的我们写一封信，封存此刻的心意。</p>
+      </div>
+      <div class="page-actions">
+        <el-button type="primary" round @click="showAddDialog = true">埋下胶囊</el-button>
       </div>
     </header>
 
@@ -102,7 +100,7 @@
         </div>
       </div>
     </el-dialog>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -166,33 +164,6 @@ const submit = async () => {
 </script>
 
 <style scoped>
-.capsule-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 40px;
-}
-
-.capsule-head {
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.head-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.capsule-head h1 {
-  margin: 0 0 8px;
-  font-size: 32px;
-}
-
-.capsule-head p {
-  margin: 0;
-  color: var(--text-sub);
-}
-
 .capsule-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
