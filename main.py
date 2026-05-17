@@ -6,8 +6,10 @@ from typing import List, Optional
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, date
+import calendar
 import json
 import os
+import socket
 import uuid
 
 from database import engine, SessionLocal, Base, Info, Moment, BucketItem, TimeCapsule, Music, Anniversary, CoverImage, DailyQuestion, Reminder, QuestionBank, get_db
@@ -226,23 +228,20 @@ def get_next_anniversary_days(start_date_str: str) -> int:
     try:
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
         today = date.today()
+        start_month = start_date.month
         start_day = start_date.day
-        
-        # Current month anniversary
-        try:
-            next_anniversary = date(today.year, today.month, start_day)
-        except ValueError: # Handle months with fewer days
-             next_anniversary = date(today.year, today.month + 1, 1)
 
-        if today > next_anniversary:
-             if today.month == 12:
-                 next_anniversary = date(today.year + 1, 1, start_day)
-             else:
-                 try:
-                    next_anniversary = date(today.year, today.month + 1, start_day)
-                 except ValueError:
-                    next_anniversary = date(today.year, today.month + 2, 1)
-        
+        def safe_anniversary(year: int) -> date:
+            # Handle 2/29 and other month day edge cases
+            last_day = calendar.monthrange(year, start_month)[1]
+            return date(year, start_month, min(start_day, last_day))
+
+        anniversary_this_year = safe_anniversary(today.year)
+        if today <= anniversary_this_year:
+            next_anniversary = anniversary_this_year
+        else:
+            next_anniversary = safe_anniversary(today.year + 1)
+
         return (next_anniversary - today).days
     except:
         return 0
@@ -988,4 +987,20 @@ def get_patterns(db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    preferred_port = int(os.getenv("APP_PORT", "8000"))
+    selected_port = preferred_port
+
+    def _is_port_in_use(port: int) -> bool:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(0.2)
+            return sock.connect_ex(("127.0.0.1", port)) == 0
+
+    if _is_port_in_use(preferred_port):
+        for candidate in range(preferred_port + 1, preferred_port + 20):
+            if not _is_port_in_use(candidate):
+                selected_port = candidate
+                print(f"Port {preferred_port} is in use, fallback to {selected_port}.")
+                break
+
+    uvicorn.run(app, host="0.0.0.0", port=selected_port)

@@ -1,22 +1,40 @@
+import os
+
 from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, JSON, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Database connection
-SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://xxladmin:XXLadmin_2021!@127.0.0.1:3310/love_memory"
+# Database connection:
+# 1) Use DATABASE_URL if provided.
+# 2) Otherwise default to local MySQL with PyMySQL driver.
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mysql+pymysql://root:123456@127.0.0.1:3306/love_memory",
+)
 
-# Create database engine
-# Note: We'll create the database if it doesn't exist, but SQLAlchemy needs to connect to an existing DB first.
-# So we'll connect to 'mysql' database first to create 'love_memory'
-temp_engine = create_engine("mysql+mysqlconnector://xxladmin:XXLadmin_2021!@127.0.0.1:3310/")
-try:
-    with temp_engine.connect() as conn:
-        conn.execute(text("CREATE DATABASE IF NOT EXISTS love_memory DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"))
-        conn.commit()
-except Exception as e:
-    print(f"Database creation warning (might already exist): {e}")
+# Create database engine.
+# SQLAlchemy needs a server-level connection first so we can CREATE DATABASE when missing.
+url_obj = make_url(SQLALCHEMY_DATABASE_URL)
+database_name = url_obj.database
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+if url_obj.get_backend_name() == "mysql" and database_name:
+    server_url = url_obj.set(database=None)
+    server_url_str = server_url.render_as_string(hide_password=False)
+    temp_engine = create_engine(server_url_str, pool_pre_ping=True)
+    try:
+        with temp_engine.connect() as conn:
+            conn.execute(
+                text(
+                    f"CREATE DATABASE IF NOT EXISTS `{database_name}` "
+                    "DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+                )
+            )
+            conn.commit()
+    except Exception as e:
+        print(f"Database creation warning: {e}")
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

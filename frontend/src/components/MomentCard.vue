@@ -145,6 +145,13 @@ const closeGallery = () => {
   padding: 20px 24px 24px;
 }
 
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
 /* Base Mosaic Gallery Styles */
 .mosaic-gallery {
   display: grid;
@@ -252,7 +259,18 @@ const closeGallery = () => {
 }
 .layout-1-portrait {
   display: block;
-  max-height: 480px; 
+  height: clamp(280px, 60vh, 640px);
+}
+
+.layout-1-portrait .mosaic-item {
+  height: 100%;
+  background: #f8f2f0;
+}
+
+.layout-1-portrait .mosaic-item img {
+  height: 100%;
+  object-fit: contain;
+  background: #f8f2f0;
 }
 
 /* 2 Images */

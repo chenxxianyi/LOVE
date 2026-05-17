@@ -209,13 +209,17 @@ const submit = async () => {
   flex-direction: column;
   height: 220px;
   border-radius: 20px;
+  color: var(--capsule-ink);
+  --capsule-ink: #2a1714;
+  --capsule-ink-strong: #1a0d0b;
+  --capsule-ink-muted: #4a2f2b;
+  --capsule-divider: rgba(26, 13, 11, 0.18);
   
   /* Unlocked defaults (warm / light) */
   background: linear-gradient(135deg, rgba(255, 240, 240, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
   border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 8px 32px rgba(228, 155, 171, 0.15);
   backdrop-filter: blur(12px);
-  color: #5c3a2e;
 }
 
 /* Glassmorphism Shine */
@@ -244,7 +248,10 @@ const submit = async () => {
   background: linear-gradient(135deg, rgba(235, 238, 245, 0.85) 0%, rgba(248, 250, 252, 0.6) 100%);
   box-shadow: 0 8px 32px rgba(144, 147, 153, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.6);
-  color: #606266;
+  --capsule-ink: #262b36;
+  --capsule-ink-strong: #1a1f2b;
+  --capsule-ink-muted: #4b5563;
+  --capsule-divider: rgba(26, 31, 43, 0.18);
 }
 
 .capsule-card.locked:hover {
@@ -266,14 +273,17 @@ const submit = async () => {
   box-shadow: -2px 4px 10px rgba(0,0,0,0.05);
   z-index: 2;
   /* Unlocked style */
-  background: linear-gradient(90deg, var(--primary-color) 0%, #ff8c9b 100%);
-  color: white;
+  background: linear-gradient(90deg, var(--pink-deep) 0%, #ff6f82 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .capsule-card.locked .status-badge {
   /* Locked style */
   background: linear-gradient(90deg, #909399 0%, #c0c4cc 100%);
-  color: white;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Content Layout */
@@ -286,11 +296,11 @@ const submit = async () => {
 }
 
 .to, .from {
-  font-family: "Georgia", serif; /* Elegant serif for intro/outro */
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
   font-size: 15px;
   font-weight: 700;
   margin: 0;
-  opacity: 0.9;
+  color: var(--capsule-ink-strong);
 }
 
 .from {
@@ -304,6 +314,7 @@ const submit = async () => {
   line-height: 1.6;
   overflow: hidden;
   position: relative;
+  color: var(--capsule-ink);
 }
 
 .unlocked-text {
@@ -312,8 +323,12 @@ const submit = async () => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-family: "KaiTi", "STKaiti", serif;
-  font-size: 16px;
+  font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--capsule-ink-strong);
+  letter-spacing: 0.2px;
+  text-shadow: none;
 }
 
 .locked-text {
@@ -324,7 +339,7 @@ const submit = async () => {
   height: 100%;
   text-align: center;
   font-size: 14px;
-  color: #909399;
+  color: var(--capsule-ink-muted);
   letter-spacing: 1px;
 }
 
@@ -345,17 +360,19 @@ const submit = async () => {
 .card-footer {
   margin-top: auto;
   font-size: 12px;
-  color: inherit;
-  opacity: 0.6;
+  color: var(--capsule-ink);
+  font-weight: 600;
   text-align: left;
-  border-top: 1px dashed rgba(0,0,0,0.1);
+  border-top: 1px dashed var(--capsule-divider);
   padding-top: 12px;
   z-index: 2;
 }
 
 .capsule-card.locked .card-footer {
-  border-top-color: rgba(0,0,0,0.05);
+  border-top-color: var(--capsule-divider);
 }
+
+ 
 
 .letter-content {
   padding: 10px;

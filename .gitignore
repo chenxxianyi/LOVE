@@ -55,5 +55,8 @@ pnpm-debug.log*
 *.swo
 .DS_Store
 
+# Uploads
+uploads/
+
 # OS
 Thumbs.db

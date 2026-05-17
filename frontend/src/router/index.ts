@@ -201,6 +201,10 @@ router.beforeEach((to, from, next) => {
       next();
       return;
     }
+    if (coupleStore.pairStatus === "pending" || coupleStore.space?.id) {
+      next("/couple/invite");
+      return;
+    }
     next("/couple/create");
     return;
   }

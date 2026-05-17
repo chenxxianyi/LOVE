@@ -76,7 +76,7 @@ function onSetupDone() {
 }
 
 onMounted(async () => {
-  if (!coupleStore.space) {
+  if (authStore.isAuthenticated) {
     try {
       await coupleStore.fetchSpace();
     } catch {

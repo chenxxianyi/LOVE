@@ -243,7 +243,18 @@ const openGallery = (index: number) => {
 
 .layout-1-portrait {
     display: block;
-    max-height: 360px;
+    height: clamp(220px, 55vh, 420px);
+}
+
+.layout-1-portrait .mosaic-item {
+    height: 100%;
+    background: #f8f2f0;
+}
+
+.layout-1-portrait .full-image {
+    height: 100%;
+    object-fit: contain;
+    background: #f8f2f0;
 }
 
 /* 2 Images */
